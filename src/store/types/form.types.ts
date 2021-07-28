@@ -1,0 +1,17 @@
+export interface IFormTypes {
+  SAVE_FORM: string;
+  SET_FORM_SENT: string;
+  SAVE_PENDING: string;
+  SET_CURRENT_FORM: string;
+  REMOVE_OLD_FORMS: string;
+  CLEAR_ALL_FORMS: string;
+}
+
+export const FORM_TYPES: IFormTypes = {
+  SAVE_FORM: 'SAVE_FORM',
+  SET_FORM_SENT: 'SET_FORM_SENT',
+  SAVE_PENDING: 'SAVE_PENDING',
+  SET_CURRENT_FORM: 'SET_CURRENT_FORM',
+  REMOVE_OLD_FORMS: 'REMOVE_OLD_FORMS',
+  CLEAR_ALL_FORMS: 'CLEAR_ALL_FORMS',
+};
