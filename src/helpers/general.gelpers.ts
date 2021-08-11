@@ -12,16 +12,27 @@ export const postRequest = async (
   url: string,
   headers: THeaders,
   data?: object,
+  method: string='POST',
 ) => {
   try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(data),
-    });
-    return await response.json();
+    let response = null;
+    if (method === 'POST') {
+      response = await fetch(url, {
+        method,
+        headers,
+        body: JSON.stringify(data),
+      });
+      const res = await response.json();
+      return res;
+    } else if (method === 'GET') {
+      response = await fetch(url, {
+        method,
+        headers,
+      });
+      const res = await response.json();
+      return res;
+    }
   } catch (e) {
-    // console.log(e.message);
     return;
   }
 };

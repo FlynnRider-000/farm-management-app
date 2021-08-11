@@ -1,4 +1,14 @@
 import {baseUnit, spacingBase} from './sizing';
-import {light, primary, secondary, primaryLight} from './colors';
+import {
+    primary,
+    primaryLight,
+    red,
+    redLight,
+    light,
+    white,
+    black,
+    grey,
+    secondary,
+} from './colors';
 
-export {baseUnit, spacingBase, light, secondary, primary, primaryLight};
+export {baseUnit, spacingBase, primary, primaryLight, red, redLight, light, white, black, grey, secondary};

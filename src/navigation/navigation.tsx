@@ -1,21 +1,17 @@
 import React from 'react';
 import {createStackNavigator} from '@react-navigation/stack';
-import SignIn from '../scenes/SignIn';
 import {NavigationContainer} from '@react-navigation/native';
 import {createDrawerNavigator} from '@react-navigation/drawer';
-import {Report} from '../components';
+import NetInfo from '@react-native-community/netinfo';
+import SignIn from '../scenes/SignIn';
+import {Report} from '../scenes/Report';
 import Main from '../scenes/Main';
 import Account from '../scenes/Account';
 import {useDispatch, useSelector} from 'react-redux';
 import {RootState} from '../store/rootReducer';
-import AllForms from '../scenes/AllForms';
-import {setUpdate} from '../store/actions/farm.actions';
-import {removeOldForms} from '../store/actions/form.actions';
-import {getAllFarmsAndVessels} from '../store/effects/farm.effects';
-import NetInfo from '@react-native-community/netinfo';
-import {getRefreshToken} from '../store/effects/user.effects';
-import {MainScreenNavigationProp} from '../entities/general';
-import {differenceInDays} from 'date-fns';
+import {getAllFarms} from '../store/effects/farm.effects';
+import {sendForm} from '../store/effects/form.effects';
+import {MainScreenNavigationProp, IFarm} from '../entities/general';
 
 export type MainStackParamList = {
   Home: undefined;
@@ -40,7 +36,7 @@ const Drawer = createDrawerNavigator<MainStackParamList>();
 
 const AuthStackScreen = () => (
   <AuthStack.Navigator>
-    <AuthStack.Screen name={'SignIn'} component={SignIn} />
+    <AuthStack.Screen options={{headerShown: false}} name={'SignIn'} component={SignIn} />
   </AuthStack.Navigator>
 );
 
@@ -49,58 +45,37 @@ type IProps = {
 };
 
 const MainStackScreen: React.FC<IProps> = ({navigation}) => {
-  const {currentUser} = useSelector((state: RootState) => state.user);
-  const rredux = useSelector((state: RootState) => state);
-  const {updated, allFarms, allVessels, allCompanies} = useSelector(
-    (state: RootState) => state.farm,
-  );
   const dispatch = useDispatch();
 
-  React.useEffect(() => {
-    const todayDay = new Date().getDay();
-    const asyncAction = async () => {
-      dispatch(getAllFarmsAndVessels());
-    };
-
-    if (
-      (currentUser && todayDay === 1 && !updated) ||
-      !allFarms ||
-      !allVessels ||
-      !allCompanies
-    ) {
-      asyncAction();
-    }
-    if (currentUser && todayDay !== 1) {
-      dispatch(setUpdate(false));
-    }
-
-    const removeOld = async () => {
-      await dispatch(removeOldForms());
-    };
-    if (currentUser?.authToken) {
-      removeOld();
-    }
-  }, []);
+  const farmData: Array<IFarm> = useSelector((state: RootState) => state.farm.allFarms);
+  const {pendingForms} = useSelector((state: RootState) => state.form);
 
   React.useEffect(() => {
-    const asyncAction = async () => {
+    const getAllData = async () => {
+      await dispatch(getAllFarms());
+    };
+
+    if (farmData.length === 0) {
+      getAllData();
+    }
+
+    const sendPendingForms = async() => {
       const connection = await NetInfo.fetch();
       if (connection.isConnected) {
-        await dispatch(getRefreshToken());
+        pendingForms.forEach((form) => dispatch(sendForm(form)));
       }
     };
-    if (currentUser) {
-      const diff = differenceInDays(new Date(), new Date(currentUser.loginTime));
-      if (diff > 150) {
-        asyncAction();
-      }
+
+    if (pendingForms) {
+      sendPendingForms();
     }
+
   }, [navigation]);
 
   return (
     <MainStack.Navigator>
-      <MainStack.Screen name={'Main'} component={Main} />
-      <MainStack.Screen name={'Report'} component={Report} />
+      <MainStack.Screen options={{headerShown: false}} name={'Main'} component={Main} />
+      <MainStack.Screen options={{headerShown: false}} name={'Report'} component={Report} />
     </MainStack.Navigator>
   );
 };

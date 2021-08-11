@@ -8,12 +8,12 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
 } from 'react-native';
-import {Formik, FormikProps, FormikValues} from 'formik';
 import * as yup from 'yup';
+import {Formik, FormikProps, FormikValues} from 'formik';
 import {useDispatch, useSelector} from 'react-redux';
-import {UInput} from '../components';
-import {primary, spacingBase} from '../styles';
-import {Button, Text} from 'native-base';
+import {UInput, UButton} from '../components';
+import {spacingBase} from '../styles';
+import {Text, Heading, useBreakpointValue } from 'native-base';
 // @ts-ignore
 import logo from '../assests/logo.png';
 import {loginUser} from '../store/effects/user.effects';
@@ -27,54 +27,74 @@ const validationSchema = yup.object().shape({
 
 const SignIn = () => {
   const dispatch = useDispatch();
+  const [isBusy, setIsBusy] = React.useState(false);
   const state = useSelector((rootState: RootState) => rootState.ui);
   const {errors}: UIStateInterface = state;
 
+  const screenSize = useBreakpointValue({
+    base: 'base',
+    sm: 'sm',
+    md: 'md',
+    lg: 'lg',
+    xl: 'xl',
+  });
+
+  const onLoginUser = async (values: any) => {
+    setIsBusy(true);
+    await dispatch(loginUser(values));
+    setIsBusy(false);
+  };
+
   return (
-    <KeyboardAvoidingView style={styles.outerContainer}>
+    <KeyboardAvoidingView style={screenSize === 'base' ? styles.miniOuterContainer : styles.outerContainer}>
       <SafeAreaView
-        style={{
-          justifyContent: 'flex-end',
-          paddingHorizontal: spacingBase + 5,
-        }}>
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <View>
-            <View style={styles.imageContainer}>
-              <Image source={logo} style={styles.imageStyles} />
-            </View>
-            {errors.type === 'user' && (
-              <Text style={styles.errorMessage}>{errors.message}</Text>
-            )}
+        style={
+          screenSize === 'base' ? {
+            paddingHorizontal: spacingBase + 5,
+            height: '100%',
+          } : {
+            justifyContent: 'center',
+            paddingHorizontal: spacingBase + 5,
+            display: 'flex',
+            flex: 1,
+          }
+        }>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} style={{backgroundColor: 'yellow'}}>
+          <View style={screenSize === 'base' ? styles.miniCard : styles.card}>
             <Formik
               initialValues={{email: '', password: ''}}
               onSubmit={(values) => {
-                dispatch(loginUser(values));
+                onLoginUser(values);
               }}
               validationSchema={validationSchema}>
               {(formikProps: FormikProps<FormikValues>) => (
                 <>
-                  <UInput
-                    placeholder={'Email'}
-                    name={'email'}
-                    formikProps={formikProps}
-                    styles={styles.inputStyles}
-                    autoFocus
-                  />
-                  <UInput
-                    placeholder={'Password'}
-                    name={'password'}
-                    formikProps={formikProps}
-                  />
                   <View>
-                    <Button
-                      disabled={!formikProps.isValid}
-                      style={[
-                        styles.button,
-                        formikProps.isValid ? {} : styles.buttonDisabled,
-                      ]}
+                    <View style={styles.imageContainer}>
+                      <Heading fontSize="xl">Login to Your Account</Heading>
+                    </View>
+                    <UInput
+                      placeholder={'EMAIL OR USERNAME'}
+                      name={'email'}
+                      formikProps={formikProps}
+                      autoFocus
+                    />
+                    <UInput
+                      placeholder={'PASSWORD'}
+                      name={'password'}
+                      formikProps={formikProps}
+                    />
+                    {errors.type === 'user' && (
+                      <Text style={styles.errorMessage}>{errors.message}</Text>
+                    )}
+                  </View>
+                  <View style={{marginTop: spacingBase * 2}}>
+                    <UButton
+                      disabled={!formikProps.isValid || isBusy}
+                      fullWidth
+                      label="Login"
                       onPress={() => formikProps.handleSubmit()}>
-                      <Text>Submit</Text>
-                    </Button>
+                    </UButton>
                   </View>
                 </>
               )}
@@ -87,24 +107,32 @@ const SignIn = () => {
 };
 
 const styles = StyleSheet.create({
+  miniCard: {
+    width: '100%',
+    height: '100%',
+    display: 'flex',
+    justifyContent: 'space-between',
+    backgroundColor: 'white',
+    paddingVertical: spacingBase * 2,
+  },
+  card: {
+    display: 'flex',
+    alignSelf: 'center',
+    width: '60%',
+    backgroundColor: 'white',
+    borderRadius: spacingBase * 2,
+    padding: spacingBase * 3,
+  },
+  miniOuterContainer: {
+    flex: 1,
+    backgroundColor: 'white',
+  },
   outerContainer: {
     flex: 1,
+    backgroundColor: '#DFE5EC',
   },
-  imageContainer: {width: '100%', marginBottom: spacingBase * 4},
-  imageStyles: {resizeMode: 'contain', width: '100%'},
-  inputStyles: {marginBottom: spacingBase},
-  button: {
-    width: '50%',
-    justifyContent: 'center',
-    alignSelf: 'center',
-    marginTop: spacingBase * 2,
-    backgroundColor: primary,
-  },
-  buttonDisabled: {
-    backgroundColor: `${primary}95`,
-  },
+  imageContainer: {marginTop: spacingBase * 3, marginBottom: spacingBase * 3},
   errorMessage: {
-    textAlign: 'center',
     marginBottom: spacingBase * 2,
     color: 'red',
   },

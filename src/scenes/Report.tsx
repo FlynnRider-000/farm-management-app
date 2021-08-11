@@ -2,6 +2,7 @@ import * as React from 'react';
 import {
   StyleSheet,
   TouchableWithoutFeedback,
+  TouchableOpacity,
   View,
   Keyboard,
   ScrollView,
@@ -9,14 +10,13 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import {spacingBase} from '../styles';
+import {
+  Heading,
+  ArrowBackIcon,
+} from 'native-base';
+import {spacingBase, light} from '../styles';
 import {
   AssessmentReport,
-  DebrisReport,
-  FloatReport,
-  ChecklistReport,
-  SpotterForm,
-  FeedbackForm,
 } from '../components';
 import {useSelector} from 'react-redux';
 import {RootState} from '../store/rootReducer';
@@ -28,7 +28,11 @@ type TProps = {
 
 export const Report: React.FC<TProps> = ({navigation}) => {
   const {currentForm} = useSelector((state: RootState) => state.form);
+  let heading = '';
 
+  if (currentForm === 'assessment') {
+    heading = 'Mussel Farm Assessment';
+  }
   return (
     <KeyboardAvoidingView
       // @ts-ignore
@@ -36,21 +40,22 @@ export const Report: React.FC<TProps> = ({navigation}) => {
       keyboardVerticalOffset={-5}>
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
-        style={styles.outerContainer}>
-        <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+      >
+        <TouchableWithoutFeedback
+          style={{backgroundColor: 'white'}}
+          onPress={() => Keyboard.dismiss()}
+        >
           <View style={styles.formContainer}>
-            {(currentForm === 'checklist' || currentForm === 'compliant') && (
-              <ChecklistReport navigation={navigation} />
-            )}
-            {currentForm === 'float' && (
-              <FloatReport navigation={navigation} />
-            )}
-            {currentForm === 'spotter' && (
-              <SpotterForm navigation={navigation} />
-            )}
-            {currentForm === 'feedback' && (
-              <FeedbackForm navigation={navigation} />
-            )}
+            <View style={styles.topBarContainer}>
+              <TouchableOpacity onPress={() => navigation.goBack()}>
+                <View style={styles.buttonWrap}>
+                  <ArrowBackIcon size={6}/>
+                </View>
+              </TouchableOpacity>
+              <Heading size="sm" style={{flex: 1, paddingLeft: spacingBase * 3}}>
+                {heading}
+              </Heading>
+            </View>
             {currentForm === 'assessment' && (
               <AssessmentReport navigation={navigation} />
             )}
@@ -62,12 +67,27 @@ export const Report: React.FC<TProps> = ({navigation}) => {
 };
 
 const styles = StyleSheet.create({
-  outerContainer: {
-    paddingTop: spacingBase * 3,
-  },
-  formContainer: {flex: 1, paddingHorizontal: spacingBase + 5},
+  formContainer: {flex: 1},
   formInputInnerStyles: {
     flex: 1,
     marginLeft: 0,
   },
+  buttonWrap: {
+    borderRadius: spacingBase * 1.5,
+    borderWidth: 1,
+    borderColor: light,
+    padding: spacingBase * 0.5,
+  },
+  topBarContainer: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    padding: spacingBase * 2,
+    shadowColor: 'grey',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.34,
+    shadowRadius: 1,
+    elevation: 10,
+  }
 });

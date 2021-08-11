@@ -6,20 +6,20 @@ import {ThunkActionType} from '../../entities/general';
 import {setError} from '../actions/ui.actions';
 import {AnyAction} from 'redux';
 import {ThunkAction} from 'redux-thunk';
-import {clearAllForms} from '../actions/form.actions';
 import {apiUrl} from '../../config/api';
 
-export const getAdditionalInfo = async (token: string) => {
+export const getAdditionalInfo = async (id: string, token: string) => {
   try {
     const userData = await postRequest(
-      apiUrl + '/api/v1/users/me',
+      apiUrl + `api/user/profiles/${id}`,
       {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        Accept: 'application/json',
+        'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
+      {},
+      'GET',
     );
-    return await userData;
+    return userData;
   } catch (e) {
     console.error(e);
   }
@@ -29,30 +29,29 @@ export const loginUser = (user: TAuthUser): ThunkActionType => {
   return async (dispatch) => {
     try {
       const currentUser = {
-        username: user.email,
+        email: user.email,
         password: user.password,
-        auth_app_token: 'xNTk5MzI2ODI2LCJuYmYiOjE1OTkzMjMyMjYsImp0aSI6',
+        remember: true,
       };
 
       const userData = await postRequest(
-        apiUrl + '/api/v1/auth/signin',
+        apiUrl + 'api/auth/login',
         {
           'Content-Type': 'application/json;charset=utf-8',
         },
         currentUser,
       );
 
-      const additionalInfo = getAdditionalInfo(userData.auth_token);
-      const {email, firstname, lastname, permission} = await additionalInfo;
+      const additionalInfo = await getAdditionalInfo(userData.user_id, userData.data.access_token);
 
       await dispatch(
         signIn({
-          email,
-          firstname,
-          lastname,
-          authToken: userData.auth_token,
+          id: userData.user_id,
+          firstname : additionalInfo.data.name,
+          lastname: '',
+          authToken: userData.data.access_token,
+          refreshToken: userData.data.refresh_token,
           loginTime: new Date(),
-          permission,
         }),
       );
     } catch (e) {
@@ -72,15 +71,17 @@ export const getRefreshToken = (): ThunkActionType => {
     const {user} = state;
     try {
       const userData = await postRequest(
-        apiUrl + '/api/v1/auth/refresh',
+        apiUrl + 'api/refresh',
         {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          Accept: 'application/json',
           Authorization: `Bearer ${user.currentUser?.authToken}`,
+          Refreshtoken: `${user.currentUser?.refreshToken}`,
+          User: `${user.currentUser?.id}`,
+          'Content-Type': 'application/json',
         },
+        {},
       );
-      userData.auth_token
-        ? await dispatch(refreshToken(userData.auth_token))
+      userData.status === 'Success'
+        ? await dispatch(refreshToken(userData.data.access_token, userData.data.refresh_token)) 
         : await dispatch(signOut());
     } catch (e) {
       dispatch(signOut());
@@ -91,6 +92,5 @@ export const getRefreshToken = (): ThunkActionType => {
 export const clearAllData = (): ThunkAction<void, {}, {}, AnyAction> => {
   return (dispatch) => {
     dispatch(signOut());
-    dispatch(clearAllForms());
   };
 };

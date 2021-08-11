@@ -4,15 +4,15 @@ import {FormikProps, FormikValues} from 'formik';
 import {Input} from 'native-base';
 import {primary, spacingBase, primaryLight, red, redLight, grey} from '../styles';
 interface IProps {
-  placeholder: string;
-  name: string;
-  formikProps: FormikProps<FormikValues>;
+  value: string;
   autoFocus?: boolean | undefined;
   styles?: object;
+  type?: string;
+  onChange: (event: any) => void;
 }
 
 export const UInput: React.FC<IProps> = React.memo(
-  ({formikProps, placeholder, name, autoFocus, styles}) => {
+  ({value, autoFocus, onChange, type}) => {
     const [isActive, setIsActive] = React.useState(false);
     const [isToggle, setIsToggle] = React.useState(false);
 
@@ -22,44 +22,25 @@ export const UInput: React.FC<IProps> = React.memo(
 
     return (
       <View style={style.wrapper}>
-        <View>
-          <Text style={style.label}>{placeholder}</Text>
-        </View>
         <View style={[
           style.input,
-          formikProps.errors[name] && formikProps.touched[name]
-            ? style.inputError
-            : isActive 
-              ? style.inputFocus
-              : style.inputNormal,
+          isActive 
+            ? style.inputFocus
+            : style.inputNormal,
           ]
         }>
           <Input
+            keyboardType={type === 'numeric' ? 'numeric' : 'default'}
+            value={value}
             variant="unstyled"
             onFocus={() => setIsActive(true)}
-            onChangeText={formikProps.handleChange(name)}
+            onChangeText={(text) => onChange(text)}
             autoFocus={autoFocus}
             onBlur={() => {
               setIsActive(false);
-              formikProps.handleBlur(name);
             }}
-            secureTextEntry={name === 'password' && !isToggle}
-            InputRightElement={
-              name === 'password'
-              ? (<TouchableWithoutFeedback onPress={onTogglePswd}>
-                <Text style={style.rightElement}>
-                  {isToggle ? 'hide' : 'view'}
-                </Text>
-              </TouchableWithoutFeedback>)
-              : <></>
-            }
           />
         </View>
-        {formikProps.errors[name] && formikProps.touched[name] && (
-          <Text style={style.warningText}>
-            {formikProps.touched[name] && formikProps.errors[name]}
-          </Text>
-        )}
       </View>
     );
   },

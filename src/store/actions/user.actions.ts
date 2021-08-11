@@ -11,7 +11,10 @@ export const signIn = (user: TUser): IUserAction => ({
   payload: user,
 });
 
-export const refreshToken = (token: string) => ({
+export const refreshToken = (token: string, rtoken: string) => ({
   type: USER_TYPES.REFRESH_TOKEN,
-  payload: token,
+  payload: {
+    token,
+    rtoken,
+  },
 });

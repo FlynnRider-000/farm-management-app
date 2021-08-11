@@ -9,11 +9,11 @@ export type TAuthUser = {
 };
 
 export type TUser = {
-  email?: string;
+  id?: string;
   firstname?: string;
   lastname?: string;
   authToken?: string;
-  permission: string;
+  refreshToken?: string;
   loginTime: Date;
 };
 
