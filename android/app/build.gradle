@@ -129,11 +129,11 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.mfa1.nz.test"
+        applicationId "com.musselfarm.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 27
-        versionName "1.27"
+        versionCode 1
+        versionName "1.0"
 
         multiDexEnabled true
     }
