@@ -33,7 +33,7 @@ export interface IAssessmentForm {
   blues: string,
   color: string,
   comment: string,
-  condition_average: string,
+  condition_avg: string,
   condition_max: string,
   condition_min: string,
   condition_score: string,

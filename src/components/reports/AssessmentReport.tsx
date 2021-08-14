@@ -24,13 +24,13 @@ type TProps = {
 export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
   const dispatch = useDispatch();
 
-  const defaultAssessment = {
+  const defaultAssessment: IAssessmentForm = {
     farm_id: '',
     account_id: '',
     blues: '',
     color: '',
     comment: '',
-    condition_average: '',
+    condition_avg: '',
     condition_max: '',
     condition_min: '',
     condition_score: '',
@@ -61,7 +61,7 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
       formState.harvest_group_id === '' ||
       formState.account_id === '' ||
       formState.color === '' ||
-      formState.condition_average === '' ||
+      formState.condition_avg === '' ||
       formState.condition_max === '' ||
       formState.condition_min === '' ||
       formState.tones === ''
@@ -140,7 +140,7 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
             const conditionAverage = Math.round(
               (Number(formState.condition_max) + Number(validValue)) / 2,
             );
-            return { ...prev, [isType]: validValue, condition_average: `${conditionAverage}` };
+            return { ...prev, [isType]: validValue, condition_avg: `${conditionAverage}` };
           }
 
           if (type === 'condition_max') {
@@ -159,7 +159,7 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
             const conditionAverage = Math.round(
               (Number(formState.condition_min) + Number(validValue)) / 2,
             );
-            return { ...prev, [isType]: validValue, condition_average: `${conditionAverage}` };
+            return { ...prev, [isType]: validValue, condition_avg: `${conditionAverage}` };
           }
 
           if (type === 'blues') {
@@ -288,9 +288,9 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
           <Text style={styles.inputStyleSmall}>Conditoin Average</Text>
           <UInput
             type="numeric"
-            value={formState.condition_average}
+            value={formState.condition_avg}
             onChange={(text) =>
-              handleTextChange('condition_average')(text)
+              handleTextChange('condition_avg')(text)
             }
           />
         </Box>
