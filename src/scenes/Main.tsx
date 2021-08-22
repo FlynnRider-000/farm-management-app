@@ -4,14 +4,23 @@ import {Text, Box, Heading, useBreakpointValue} from 'native-base';
 import {useDispatch, useSelector} from 'react-redux';
 import NetInfo from '@react-native-community/netinfo';
 import {differenceInSeconds} from 'date-fns';
+import moment from 'moment';
 
 import {spacingBase} from '../styles';
 import {RootState} from '../store/rootReducer';
-import {setCurrentForm} from '../store/actions/form.actions';
+import {setCurrentForm, setEditForm} from '../store/actions/form.actions';
 import {getRefreshToken} from '../store/effects/user.effects';
 import {getAllFarms} from '../store/effects/farm.effects';
+import {sendForm} from '../store/effects/form.effects';
 import {MainStackParamList} from '../navigation/navigation';
-import {MainScreenNavigationProp} from '../entities/general';
+import {UButton} from '../components';
+import {
+  MainScreenNavigationProp,
+  ILine,
+  IFarm,
+  IUtil,
+  IFormTypes,
+} from '../entities/general';
 
 type IProps = {
   navigation: MainScreenNavigationProp;
@@ -29,6 +38,8 @@ const Main: React.FC<IProps> = React.memo(({navigation}) => {
   });
 
   const {currentUser} = useSelector((state: RootState) => state.user);
+  const {pendingForms} = useSelector((state: RootState) => state.form);
+  const farmData: Array<IFarm> = useSelector((state: RootState) => state.farm.allFarms);
 
   React.useEffect(() => {
     const onFocus = navigation.addListener('focus', (e) => {
@@ -43,8 +54,7 @@ const Main: React.FC<IProps> = React.memo(({navigation}) => {
   
       if (currentUser) {
         const diff = differenceInSeconds(new Date(), new Date(currentUser.loginTime));
-        console.log('Time-Diff ', diff);
-        if (diff > 4000) {
+        if (diff > 1000) {
           asyncAction();
         }
       }
@@ -57,9 +67,42 @@ const Main: React.FC<IProps> = React.memo(({navigation}) => {
     navigation.push(route);
 
   const onFormCreate = (type: string) => {
-    if (type === 'assessment') {
+    if (type === 'assessment' || type === 'harvest') {
       dispatch(setCurrentForm(type));
       handleNavigatePush('Report');
+    }
+  };
+
+  const getFarmName = (farm_id: string) => {
+    const curFarm: Array<IFarm> = farmData.filter((farm: any) => farm.id === farm_id);
+    if (curFarm)
+      return curFarm[0].name;
+    return '';
+  };
+
+  const getLineName = (farm_id: string, line_id: string) => {
+    const curFarm: Array<IFarm> = farmData.filter((farm: any) => farm.id === farm_id);
+    if (curFarm) {
+      const lines = curFarm[0].lines;
+      const curLine: Array<ILine> = lines.filter((line: any) => line.id === line_id);
+      if (curLine)
+        return curLine[0].line_name;
+    }
+    return '';
+  };
+
+  const onEditForm = (form: IFormTypes) => {
+    dispatch(setCurrentForm(form.type!));
+    dispatch(setEditForm(form));
+    handleNavigatePush('Report');
+  };
+
+  const sendPendingForms = async() => {
+    if (pendingForms) {
+      const connection = await NetInfo.fetch();
+      if (connection.isConnected) {
+        pendingForms.forEach((form) => dispatch(sendForm(form)));
+      }
     }
   };
 
@@ -89,6 +132,58 @@ const Main: React.FC<IProps> = React.memo(({navigation}) => {
               <Text style={styles.whiteLabel} fontSize="lg">Harvest</Text>
             </View>
           </TouchableHighlight  >
+        </Box>
+        <Box mt={spacingBase} mb={spacingBase} style={styles.guidePanel}>
+          <View style={[
+            styles.tableRow,{
+              marginBottom: spacingBase * 1.2,
+              justifyContent: 'space-between'
+          }]}>
+            <Heading size="md">
+              Assessment Forms
+            </Heading>
+            <UButton
+              onPress={() => sendPendingForms()}
+              disabled={false}
+              label="Send"
+              fullWidth={false}
+              smallOutline={true}
+            />
+          </View>
+          <View style={styles.tableRow}>
+            <View style={styles.flexChild}><Text>Farm</Text></View>
+            <View style={styles.flexChild}><Text>Line</Text></View>
+            {screenSize !== 'base' && (
+              <>
+                <View style={styles.flexChild}><Text>Con-Avg</Text></View>
+                <View style={styles.flexChild}><Text>Color</Text></View>
+              </>
+            )}
+            <View style={styles.flexChild}><Text>Assess Date</Text></View>
+            <View style={styles.flexChild}></View>
+          </View>
+          {pendingForms.filter(form => form.type === 'assessment').map((form, index) => (
+            <View style={styles.tableRow} key={`form${index}`}>
+              <View style={styles.flexChild}><Text>{getFarmName(form.farm_id)}</Text></View>
+              <View style={styles.flexChild}><Text>{getLineName(form.farm_id, form.line_id)}</Text></View>
+              {screenSize !== 'base' && (
+                <>
+                  <View style={styles.flexChild}><Text>{form.condition_avg}</Text></View>
+                  <View style={styles.flexChild}><Text>{form.color}</Text></View>
+                </>
+              )}
+              <View style={styles.flexChild}><Text>{moment.unix(Number(form.date_assessment)).format("YYYY/MM/DD")}</Text></View>
+              <View style={[styles.flexChild, {alignItems: 'center'}]}>
+                <UButton
+                  onPress={() => onEditForm(form)}
+                  disabled={false}
+                  label="Edit"
+                  fullWidth={false}
+                  smallOutline={true}
+                />
+              </View>
+            </View>
+          ))}
         </Box>
         <Box mt={spacingBase} mb={spacingBase} style={styles.guidePanel}>
           <Heading mb={spacingBase}>
@@ -138,6 +233,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacingBase + 5,
     maxWidth: 700,
     backgroundColor: '#DFE5EC',
+  },
+  flexChild: {
+    flex: 1,
+    alignSelf: 'stretch',
+    justifyContent: 'center',
+  },
+  tableRow: {
+    flex: 1,
+    // alignSelf: 'stretch',
+    alignItems: 'center',
+    flexDirection: 'row',
+    marginVertical: spacingBase * 0.5,
   },
   c1: {
     backgroundColor: '#334CAA',
@@ -191,6 +298,7 @@ const styles = StyleSheet.create({
     padding: spacingBase * 3,
     marginHorizontal: spacingBase + 5,
     maxWidth: 700,
+    width: '100%',
     alignSelf: 'center',
   },
 });

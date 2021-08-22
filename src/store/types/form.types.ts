@@ -5,6 +5,8 @@ export interface IFormTypes {
   SET_CURRENT_FORM: string;
   REMOVE_OLD_FORMS: string;
   CLEAR_ALL_FORMS: string;
+  SET_EDIT_FORM: string;
+  UPDATE_FORM: string;
 }
 
 export const FORM_TYPES: IFormTypes = {
@@ -14,4 +16,6 @@ export const FORM_TYPES: IFormTypes = {
   SET_CURRENT_FORM: 'SET_CURRENT_FORM',
   REMOVE_OLD_FORMS: 'REMOVE_OLD_FORMS',
   CLEAR_ALL_FORMS: 'CLEAR_ALL_FORMS',
+  SET_EDIT_FORM: 'SET_EDIT_FORM',
+  UPDATE_FORM: 'UPDATE_FORM',
 };

@@ -93,6 +93,7 @@ const SignIn = () => {
                       disabled={!formikProps.isValid || isBusy}
                       fullWidth
                       label="Login"
+                      smallOutline={false}
                       onPress={() => formikProps.handleSubmit()}>
                     </UButton>
                   </View>

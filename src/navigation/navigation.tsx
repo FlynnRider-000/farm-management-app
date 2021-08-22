@@ -2,7 +2,6 @@ import React from 'react';
 import {createStackNavigator} from '@react-navigation/stack';
 import {NavigationContainer} from '@react-navigation/native';
 import {createDrawerNavigator} from '@react-navigation/drawer';
-import NetInfo from '@react-native-community/netinfo';
 import SignIn from '../scenes/SignIn';
 import {Report} from '../scenes/Report';
 import Main from '../scenes/Main';
@@ -10,7 +9,6 @@ import Account from '../scenes/Account';
 import {useDispatch, useSelector} from 'react-redux';
 import {RootState} from '../store/rootReducer';
 import {getAllFarms} from '../store/effects/farm.effects';
-import {sendForm} from '../store/effects/form.effects';
 import {MainScreenNavigationProp, IFarm} from '../entities/general';
 
 export type MainStackParamList = {
@@ -48,7 +46,6 @@ const MainStackScreen: React.FC<IProps> = ({navigation}) => {
   const dispatch = useDispatch();
 
   const farmData: Array<IFarm> = useSelector((state: RootState) => state.farm.allFarms);
-  const {pendingForms} = useSelector((state: RootState) => state.form);
 
   React.useEffect(() => {
     const getAllData = async () => {
@@ -58,18 +55,6 @@ const MainStackScreen: React.FC<IProps> = ({navigation}) => {
     if (farmData.length === 0) {
       getAllData();
     }
-
-    const sendPendingForms = async() => {
-      const connection = await NetInfo.fetch();
-      if (connection.isConnected) {
-        pendingForms.forEach((form) => dispatch(sendForm(form)));
-      }
-    };
-
-    if (pendingForms) {
-      sendPendingForms();
-    }
-
   }, [navigation]);
 
   return (

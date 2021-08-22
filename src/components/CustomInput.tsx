@@ -48,8 +48,8 @@ export const UInput: React.FC<IProps> = React.memo(
 
 const style = StyleSheet.create({
   wrapper: {
-    marginTop: spacingBase * 2,
-    marginBottom: spacingBase * 2,
+    marginTop: spacingBase,
+    marginBottom: spacingBase,
   },
   warningText: {
     marginTop: spacingBase,

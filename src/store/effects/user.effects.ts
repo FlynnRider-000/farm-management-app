@@ -31,7 +31,7 @@ export const loginUser = (user: TAuthUser): ThunkActionType => {
       const currentUser = {
         email: user.email,
         password: user.password,
-        remember: true,
+        remember: false,
       };
 
       const userData = await postRequest(

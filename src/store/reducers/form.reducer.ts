@@ -5,6 +5,7 @@ import {FormStateType, TFormAction} from '../../entities/form.entities';
 const INITIAL_STATE: FormStateType = {
   currentForm: null,
   pendingForms: [],
+  editForm: null,
 };
 
 export const formReducer = (
@@ -12,6 +13,19 @@ export const formReducer = (
   action: TFormAction,
 ): FormStateType => {
   switch (action.type) {
+    case FORM_TYPES.UPDATE_FORM:
+      const id = state.pendingForms.indexOf(action.payload.oldForm);
+      return <FormStateType>{
+        ...state,
+        pendingForms: state.pendingForms.map((form, index) => (
+          index===id ? action.payload.newForm : form
+        )),
+      };
+    case FORM_TYPES.SET_EDIT_FORM:
+      return <FormStateType>{
+        ...state,
+        editForm: action.payload,
+      };
     case FORM_TYPES.SAVE_PENDING:
       return <FormStateType>{
         ...state,

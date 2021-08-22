@@ -25,9 +25,13 @@ export const CustomTextArea: React.FC<IProps> = React.memo(
           ]
         }>
           <TextArea
-            h={height}
+            style={{
+              height: height
+            }}
+            textAlignVertical="top"
             variant="unstyled"
             value={value}
+            multiline={true}
             onFocus={() => setIsActive(true)}
             autoFocus={autoFocus}
             onBlur={() => {

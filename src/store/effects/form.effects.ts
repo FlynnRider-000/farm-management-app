@@ -43,31 +43,33 @@ const saveForm = (form: IFormTypes): ThunkActionType => {
     const state: RootState = getState();
     const {user} = state;
 
-    try {
-      const internetConnection = await NetInfo.fetch();
+    dispatch(saveFormToPending(form));
 
-      if (internetConnection.isConnected) {
-        const sendForm = await postRequest(
-          getFormUrl(form.type),
-          {
-            'Accept': "application/json",
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${user.currentUser?.authToken}`,
-          },
-          form,
-        );
+    // try {
+    //   const internetConnection = await NetInfo.fetch();
+
+    //   if (internetConnection.isConnected) {
+    //     const sendForm = await postRequest(
+    //       getFormUrl(form.type),
+    //       {
+    //         'Accept': "application/json",
+    //         'Content-Type': 'application/json',
+    //         Authorization: `Bearer ${user.currentUser?.authToken}`,
+    //       },
+    //       form,
+    //     );
         
-        if (sendForm.status !== 'Success') {
-          if (form.harvest_group_id) {
-            dispatch(saveFormToPending(form));
-          }
-        }
-      } else {
-        dispatch(saveFormToPending(form));
-      }
-    } catch (e) {
-      dispatch(saveFormToPending(form));
-    }
+    //     if (sendForm.status !== 'Success') {
+    //       if (form.harvest_group_id) {
+    //         dispatch(saveFormToPending(form));
+    //       }
+    //     }
+    //   } else {
+    //     dispatch(saveFormToPending(form));
+    //   }
+    // } catch (e) {
+    //   dispatch(saveFormToPending(form));
+    // }
   };
 };
 
