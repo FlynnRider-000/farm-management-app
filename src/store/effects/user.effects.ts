@@ -80,9 +80,11 @@ export const getRefreshToken = (): ThunkActionType => {
         },
         {},
       );
-      userData.status === 'Success'
-        ? await dispatch(refreshToken(userData.data.access_token, userData.data.refresh_token)) 
-        : await dispatch(signOut());
+      if (userData.status === 'Success') {
+        await dispatch(refreshToken(userData.data.access_token, userData.data.refresh_token));
+      } else {
+        await dispatch(signOut());
+      }
     } catch (e) {
       dispatch(signOut());
     }

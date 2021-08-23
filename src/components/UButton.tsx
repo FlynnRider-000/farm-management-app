@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {StyleSheet, Text} from 'react-native';
-import {Button} from 'native-base';
+import {Button, Spinner} from 'native-base';
 import {primary, spacingBase, light} from '../styles';
 
 interface IProps {
@@ -9,10 +9,11 @@ interface IProps {
   disabled: boolean;
   onPress: (event: any) => void;
   smallOutline: boolean;
+  isLoading: boolean;
 }
 
 export const UButton: React.FC<IProps> = React.memo(
-  ({label, fullWidth, disabled, onPress, smallOutline}) => {
+  ({label, fullWidth, disabled, onPress, smallOutline, isLoading=false}) => {
     const [isActive, setIsActive] = React.useState(false);
 
     return (
@@ -20,7 +21,6 @@ export const UButton: React.FC<IProps> = React.memo(
         shadow={ smallOutline ? 0 : 7}
         onPress={onPress}
         disabled={disabled}
-        isDisabled={disabled}
         size={ smallOutline ? "sm" : "md"}
         style={[
           smallOutline ? style.smallButton : style.button,
@@ -29,6 +29,7 @@ export const UButton: React.FC<IProps> = React.memo(
         ]}
       >
         <Text style={smallOutline ? {color: primary} : {color: 'white'}}>
+          {isLoading && <Spinner style={{margin: 0, padding: 0}} size="sm" color="blue.500" />}
           {label}
         </Text>
       </Button>

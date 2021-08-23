@@ -108,7 +108,7 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
     }
   }, [formState]);
 
-  const handleFormSubmit = () => {
+  const handleFormSubmit = async () => {
     const form = {
       ...formState,
       type: 'assessment',
@@ -116,10 +116,10 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
       planned_date_harvest: `${toggleSecondMillisecond(Number(pHarvestDate.getTime()))}`,
     }
     if (editForm) {
-      dispatch(updateForm(editForm, form));
-      dispatch(setEditForm(null));
+      await dispatch(updateForm(editForm, form));
+      await dispatch(setEditForm(null));
     } else {
-      dispatch(saveForm(form));
+      await dispatch(saveForm(form));
     }
     navigation.navigate('Main');
   };
@@ -526,6 +526,7 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
         disabled={inactiveButton}
         label={editForm ? 'Update' : 'Submit' }
         fullWidth
+        isLoading={false}
         smallOutline={false}
       />
       {datePickerShow &&  <DateTimePicker

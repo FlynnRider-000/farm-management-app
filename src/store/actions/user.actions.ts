@@ -14,7 +14,7 @@ export const signIn = (user: TUser): IUserAction => ({
 export const refreshToken = (token: string, rtoken: string) => ({
   type: USER_TYPES.REFRESH_TOKEN,
   payload: {
-    token,
-    rtoken,
+    authToken: token,
+    refreshToken: rtoken,
   },
 });

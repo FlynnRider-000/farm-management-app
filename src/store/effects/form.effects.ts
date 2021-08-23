@@ -8,7 +8,7 @@ import {
   saveFormToPending,
 } from '../actions/form.actions';
 
-const sendForm = (form: IFormTypes): ThunkActionType => {
+const sendForm = (form: Array<IFormTypes>, emailNotify: boolean): ThunkActionType => {
   return async (dispatch, getState: Function): Promise<void> => {
     const state: RootState = getState();
     const {user} = state;
@@ -17,17 +17,22 @@ const sendForm = (form: IFormTypes): ThunkActionType => {
       const internetConnection = await NetInfo.fetch();
       if (internetConnection.isConnected) {
         const sendForm = await postRequest(
-          getFormUrl(form.type),
+          getFormUrl(form[0].type),
           {
             'Accept': "application/json",
             'Content-Type': 'application/json',
             Authorization: `Bearer ${user.currentUser?.authToken}`,
           },
-          form,
+          {
+            data: form,
+            email: emailNotify
+          },
         );
-        
+
         if (sendForm.status === 'Success') {
-          dispatch(removeFormFromPending(form));
+          for( let i = 0 ; i < form.length; i++) {
+            await dispatch(removeFormFromPending(form[i]));
+          }
         } else {
           return;
         }

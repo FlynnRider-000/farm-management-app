@@ -44,5 +44,43 @@ export interface IAssessmentForm {
   tones: string,
 }
 
+export interface IHarvestForm {
+  type?: string,
+  company: string,
+  vessel: string,
+  harvest_number: string,
+  number_of_bags: string,
+  tag_color: string,
+  port_of_unload: string,
+  crop_owner: string,
+  accredited_farm: string,
+  line: string,
+  growing_area: string,
+  delivered_to: string,
+  packhouse: string,
+  start_time: string,
+  finish_time: string,
+  date: string,
+  bags_clean: boolean,
+  area_open_for_harvest: boolean,
+  trucks_booked: boolean,
+  more_clean_bags_on_truck: boolean,
+  shell_length: string,
+  shell_condition: string,
+  mussels: string,
+  meat_yield: string,
+  blues: string,
+  marine_waste: string,
+  backbone_ok: boolean,
+  backbone_replace: boolean,
+  lights_ids_in_place: boolean,
+  flotation_on_farm: boolean,
+  number_of_rope_bags: string,
+  product_left_on_line: string,
+  name: string,
+  signature: string,
+  comments: string,
+}
+
 export type IFormTypes =
   | IAssessmentForm;

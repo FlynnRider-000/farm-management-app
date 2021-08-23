@@ -27,7 +27,8 @@ export const userReducer = (
           ...state.currentUser,
           loginTime: new Date(),
           //@ts-ignore
-          authToken: action.payload.token,
+          authToken: action.payload.authToken,
+          //@ts-ignore
           refreshToken: action.payload.refreshToken,
         },
       };

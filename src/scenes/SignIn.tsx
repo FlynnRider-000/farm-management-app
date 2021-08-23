@@ -94,6 +94,7 @@ const SignIn = () => {
                       fullWidth
                       label="Login"
                       smallOutline={false}
+                      isLoading={false}
                       onPress={() => formikProps.handleSubmit()}>
                     </UButton>
                   </View>

@@ -3,7 +3,7 @@ import {apiUrl} from '../config/api';
 
 export const getFormUrl = (type: string) => {
   if (type === 'assessment')
-    return apiUrl + 'api/farm/line/assessment/assessments';
+    return apiUrl + 'api/farm/line/assessment/add-assessments';
 };
 
 export const validationForZeroMinus = (value: string | number): string => {

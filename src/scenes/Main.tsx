@@ -4,6 +4,7 @@ import {Text, Box, Heading, useBreakpointValue} from 'native-base';
 import {useDispatch, useSelector} from 'react-redux';
 import NetInfo from '@react-native-community/netinfo';
 import {differenceInSeconds} from 'date-fns';
+import {Checkbox} from 'react-native-ui-lib';
 import moment from 'moment';
 
 import {spacingBase} from '../styles';
@@ -40,6 +41,9 @@ const Main: React.FC<IProps> = React.memo(({navigation}) => {
   const {currentUser} = useSelector((state: RootState) => state.user);
   const {pendingForms} = useSelector((state: RootState) => state.form);
   const farmData: Array<IFarm> = useSelector((state: RootState) => state.farm.allFarms);
+
+  const [assessmentSending, setAssessmentSending] = React.useState(false);
+  const [assessEmailNotify, setAssessEmailNotify] = React.useState(true);
 
   React.useEffect(() => {
     const onFocus = navigation.addListener('focus', (e) => {
@@ -97,15 +101,20 @@ const Main: React.FC<IProps> = React.memo(({navigation}) => {
     handleNavigatePush('Report');
   };
 
-  const sendPendingForms = async() => {
+  const sendPendingForms = async (formType: string) => {
     if (pendingForms) {
+      setAssessmentSending(true);
       const connection = await NetInfo.fetch();
       if (connection.isConnected) {
-        pendingForms.forEach((form) => dispatch(sendForm(form)));
+        const forms = pendingForms.filter(form => form.type === formType);
+        await dispatch(getRefreshToken());
+        await dispatch(sendForm(forms, assessEmailNotify));
       }
+      setAssessmentSending(false);
     }
   };
 
+  const pendingAssessments = pendingForms.filter(form => form.type === 'assessment');
   return (
     <ScrollView style={screenSize === 'base' ? styles.miniOutercontainer : styles.outerContainer}>
       <View style={screenSize === 'base' ? styles.miniCardContainer : styles.cardContainer}>
@@ -133,58 +142,74 @@ const Main: React.FC<IProps> = React.memo(({navigation}) => {
             </View>
           </TouchableHighlight  >
         </Box>
-        <Box mt={spacingBase} mb={spacingBase} style={styles.guidePanel}>
-          <View style={[
-            styles.tableRow,{
-              marginBottom: spacingBase * 1.2,
-              justifyContent: 'space-between'
-          }]}>
-            <Heading size="md">
-              Assessment Forms
-            </Heading>
-            <UButton
-              onPress={() => sendPendingForms()}
-              disabled={false}
-              label="Send"
-              fullWidth={false}
-              smallOutline={true}
-            />
-          </View>
-          <View style={styles.tableRow}>
-            <View style={styles.flexChild}><Text>Farm</Text></View>
-            <View style={styles.flexChild}><Text>Line</Text></View>
-            {screenSize !== 'base' && (
-              <>
-                <View style={styles.flexChild}><Text>Con-Avg</Text></View>
-                <View style={styles.flexChild}><Text>Color</Text></View>
-              </>
-            )}
-            <View style={styles.flexChild}><Text>Assess Date</Text></View>
-            <View style={styles.flexChild}></View>
-          </View>
-          {pendingForms.filter(form => form.type === 'assessment').map((form, index) => (
-            <View style={styles.tableRow} key={`form${index}`}>
-              <View style={styles.flexChild}><Text>{getFarmName(form.farm_id)}</Text></View>
-              <View style={styles.flexChild}><Text>{getLineName(form.farm_id, form.line_id)}</Text></View>
-              {screenSize !== 'base' && (
-                <>
-                  <View style={styles.flexChild}><Text>{form.condition_avg}</Text></View>
-                  <View style={styles.flexChild}><Text>{form.color}</Text></View>
-                </>
-              )}
-              <View style={styles.flexChild}><Text>{moment.unix(Number(form.date_assessment)).format("YYYY/MM/DD")}</Text></View>
-              <View style={[styles.flexChild, {alignItems: 'center'}]}>
+        {pendingAssessments.length ? (
+          <Box mt={spacingBase} mb={spacingBase} style={styles.guidePanel}>
+            <View style={[
+              styles.tableRow,{
+                marginBottom: spacingBase * 1.2,
+                justifyContent: 'space-between'
+            }]}>
+              <Heading size="md">
+                Assessment Forms
+              </Heading>
+              <View style={styles.tableRowRight}>
+                <View style={[
+                  styles.checkWrap,{
+                    marginRight: spacingBase,
+                }]}>
+                  <Checkbox
+                    value={assessEmailNotify}
+                    onValueChange={value => setAssessEmailNotify(value)}
+                  />
+                  <Text style={{marginLeft: spacingBase * 0.5}}>Email Copy</Text>
+                </View>
                 <UButton
-                  onPress={() => onEditForm(form)}
-                  disabled={false}
-                  label="Edit"
+                  onPress={() => sendPendingForms('assessment')}
+                  disabled={assessmentSending ? true :false}
+                  label={assessmentSending ? '' : 'Send'}
                   fullWidth={false}
                   smallOutline={true}
+                  isLoading={assessmentSending}
                 />
               </View>
             </View>
-          ))}
-        </Box>
+            <View style={styles.tableRow}>
+              <View style={styles.flexChild}><Text>Farm</Text></View>
+              <View style={styles.flexChild}><Text>Line</Text></View>
+              {screenSize !== 'base' && (
+                <>
+                  <View style={styles.flexChild}><Text>Con-Avg</Text></View>
+                  <View style={styles.flexChild}><Text>Color</Text></View>
+                </>
+              )}
+              <View style={styles.flexChild}><Text>Assess Date</Text></View>
+              <View style={styles.flexChild}></View>
+            </View>
+            {pendingAssessments.map((form, index) => (
+              <View style={styles.tableRow} key={`form${index}`}>
+                <View style={styles.flexChild}><Text>{getFarmName(form.farm_id)}</Text></View>
+                <View style={styles.flexChild}><Text>{getLineName(form.farm_id, form.line_id)}</Text></View>
+                {screenSize !== 'base' && (
+                  <>
+                    <View style={styles.flexChild}><Text>{form.condition_avg}</Text></View>
+                    <View style={styles.flexChild}><Text>{form.color}</Text></View>
+                  </>
+                )}
+                <View style={styles.flexChild}><Text>{moment.unix(Number(form.date_assessment)).format("YYYY/MM/DD")}</Text></View>
+                <View style={[styles.flexChild, {alignItems: 'flex-end'}]}>
+                  <UButton
+                    onPress={() => onEditForm(form)}
+                    disabled={assessmentSending ? true :false}
+                    label="Edit"
+                    isLoading={false}
+                    fullWidth={false}
+                    smallOutline={true}
+                  />
+                </View>
+              </View>
+            ))}
+          </Box>
+        ) : (<></>)}
         <Box mt={spacingBase} mb={spacingBase} style={styles.guidePanel}>
           <Heading mb={spacingBase}>
             How it works
@@ -238,6 +263,20 @@ const styles = StyleSheet.create({
     flex: 1,
     alignSelf: 'stretch',
     justifyContent: 'center',
+  },
+  tableRowRight: {
+    // alignSelf: 'stretch',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    flexDirection: 'row',
+    marginVertical: spacingBase * 0.5,
+  },
+  checkWrap: {
+    display: 'flex',
+    alignItems: 'center',
+    flexDirection: 'row',
+    marginVertical: spacingBase * 0.5,
   },
   tableRow: {
     flex: 1,
