@@ -14,25 +14,33 @@ import {
   Heading,
   ArrowBackIcon,
 } from 'native-base';
+import {useSelector, useDispatch} from 'react-redux';
 import {spacingBase, light} from '../styles';
 import {
   AssessmentReport,
+  HarvestReport,
 } from '../components';
-import {useSelector} from 'react-redux';
 import {RootState} from '../store/rootReducer';
 import {MainScreenNavigationProp} from '../entities/general';
+import {setEditForm} from '../store/actions/form.actions';
 
 type TProps = {
   navigation: MainScreenNavigationProp;
 };
 
 export const Report: React.FC<TProps> = ({navigation}) => {
-  const {currentForm} = useSelector((state: RootState) => state.form);
+  const dispatch = useDispatch();
+
+  const {currentForm, editForm} = useSelector((state: RootState) => state.form);
   let heading = '';
 
   if (currentForm === 'assessment') {
     heading = 'Mussel Farm Assessment';
   }
+  if (currentForm === 'harvest') {
+    heading = 'Mussel Harvest Declaration';
+  }
+
   return (
     <KeyboardAvoidingView
       // @ts-ignore
@@ -47,7 +55,12 @@ export const Report: React.FC<TProps> = ({navigation}) => {
         >
           <View style={styles.formContainer}>
             <View style={styles.topBarContainer}>
-              <TouchableOpacity onPress={() => navigation.goBack()}>
+              <TouchableOpacity onPress={async () => {
+                if (editForm) {
+                  await dispatch(setEditForm(null));
+                }
+                navigation.goBack();
+              }}>
                 <View style={styles.buttonWrap}>
                   <ArrowBackIcon size={6}/>
                 </View>
@@ -58,6 +71,9 @@ export const Report: React.FC<TProps> = ({navigation}) => {
             </View>
             {currentForm === 'assessment' && (
               <AssessmentReport navigation={navigation} />
+            )}
+            {currentForm === 'harvest' && (
+              <HarvestReport navigation={navigation} />
             )}
           </View>
         </TouchableWithoutFeedback>

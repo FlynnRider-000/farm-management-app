@@ -11,6 +11,7 @@ import {spacingBase} from '../styles';
 import {RootState} from '../store/rootReducer';
 import {setCurrentForm, setEditForm} from '../store/actions/form.actions';
 import {getRefreshToken} from '../store/effects/user.effects';
+import {signOut} from '../store/actions/user.actions';
 import {getAllFarms} from '../store/effects/farm.effects';
 import {sendForm} from '../store/effects/form.effects';
 import {MainStackParamList} from '../navigation/navigation';
@@ -52,19 +53,26 @@ const Main: React.FC<IProps> = React.memo(({navigation}) => {
       const asyncAction = async () => {
         const connection = await NetInfo.fetch();
         if (connection.isConnected) {
-          await dispatch(getRefreshToken());
+          await dispatch(signOut());
         }
       };
   
       if (currentUser) {
         const diff = differenceInSeconds(new Date(), new Date(currentUser.loginTime));
-        if (diff > 1000) {
+        if (diff > 31535000) {
           asyncAction();
         }
       }
-
-      dispatch(getAllFarms());
     });
+
+    const getAllData = async () => {
+      await dispatch(getAllFarms());
+    };
+
+    if (farmData.length === 0) {
+      getAllData();
+    }
+
   }, [navigation]);
 
   const handleNavigatePush = (route: keyof MainStackParamList) =>
@@ -107,7 +115,6 @@ const Main: React.FC<IProps> = React.memo(({navigation}) => {
       const connection = await NetInfo.fetch();
       if (connection.isConnected) {
         const forms = pendingForms.filter(form => form.type === formType);
-        await dispatch(getRefreshToken());
         await dispatch(sendForm(forms, assessEmailNotify));
       }
       setAssessmentSending(false);
@@ -143,7 +150,7 @@ const Main: React.FC<IProps> = React.memo(({navigation}) => {
           </TouchableHighlight  >
         </Box>
         {pendingAssessments.length ? (
-          <Box mt={spacingBase} mb={spacingBase} style={styles.guidePanel}>
+          <Box mt={spacingBase} style={styles.guidePanel}>
             <View style={[
               styles.tableRow,{
                 marginBottom: spacingBase * 1.2,
@@ -152,7 +159,7 @@ const Main: React.FC<IProps> = React.memo(({navigation}) => {
               <Heading size="md">
                 Assessment Forms
               </Heading>
-              <View style={styles.tableRowRight}>
+              <View style={screenSize === 'base' ? styles.tableRowRightSM: styles.tableRowRight}>
                 <View style={[
                   styles.checkWrap,{
                     marginRight: spacingBase,
@@ -255,8 +262,7 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'row',
     justifyContent:'space-between',
-    paddingHorizontal: spacingBase + 5,
-    maxWidth: 700,
+    maxWidth: 800,
     backgroundColor: '#DFE5EC',
   },
   flexChild: {
@@ -270,6 +276,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-end',
     flexDirection: 'row',
+    marginVertical: spacingBase * 0.5,
+  },
+  tableRowRightSM: {
+    display: 'flex',
+    alignItems: 'flex-end',
+    justifyContent: 'flex-end',
+    flexDirection: 'column',
     marginVertical: spacingBase * 0.5,
   },
   checkWrap: {
@@ -317,7 +330,7 @@ const styles = StyleSheet.create({
     color: 'white',
     flex: 1,
     height: undefined,
-    aspectRatio: 10/13,
+    aspectRatio: 13/13,
     display: 'flex',
     justifyContent: 'space-between',
     shadowRadius: 10,
@@ -336,7 +349,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     padding: spacingBase * 3,
     marginHorizontal: spacingBase + 5,
-    maxWidth: 700,
+    maxWidth: 800,
     width: '100%',
     alignSelf: 'center',
   },

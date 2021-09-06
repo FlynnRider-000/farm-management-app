@@ -17,6 +17,7 @@ export interface ILine {
   id: string;
   line_name: string;
   harvest_id: string;
+  last_assess: IAssessmentForm;
 }
 export interface IFarm {
   id: string;

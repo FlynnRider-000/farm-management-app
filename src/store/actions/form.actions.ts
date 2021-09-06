@@ -23,7 +23,7 @@ export const setEditForm = (form: IFormTypes | null): TFormAction => ({
   payload: form,
 });
 
-export const updateForm = (oldForm: IFormTypes, newForm: IFormTypes): TFormAction => ({
+export const updateFormToPending = (oldForm: IFormTypes, newForm: IFormTypes): TFormAction => ({
   type: FORM_TYPES.UPDATE_FORM,
   payload: {oldForm, newForm},
 });

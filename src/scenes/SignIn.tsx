@@ -11,13 +11,14 @@ import {
 import * as yup from 'yup';
 import {Formik, FormikProps, FormikValues} from 'formik';
 import {useDispatch, useSelector} from 'react-redux';
-import {UInput, UButton} from '../components';
-import {spacingBase} from '../styles';
 import {Text, Heading, useBreakpointValue } from 'native-base';
-// @ts-ignore
-import logo from '../assests/logo.png';
-import {loginUser} from '../store/effects/user.effects';
+import {apiUrl} from '../config/api';
+import {postRequest} from '../helpers/general.gelpers';
 import {RootState} from '../store/rootReducer';
+import {signIn} from '../store/actions/user.actions';
+import {setError} from '../store/actions/ui.actions';
+import {spacingBase} from '../styles';
+import {UInput, UButton} from '../components';
 import {UIStateInterface} from '../entities/ui.entities';
 
 const validationSchema = yup.object().shape({
@@ -39,10 +40,61 @@ const SignIn = () => {
     xl: 'xl',
   });
 
+  const getAdditionalInfo = async (id: string, token: string) => {
+    try {
+      const userData = await postRequest(
+        apiUrl + `api/user/profiles/${id}`,
+        {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        {},
+        'GET',
+      );
+      return userData;
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const onLoginUser = async (values: any) => {
     setIsBusy(true);
-    await dispatch(loginUser(values));
-    setIsBusy(false);
+    try {
+      const currentUser = {
+        email: values.email.trim(),
+        password: values.password.trim(),
+        remember: true,
+      };
+
+      const userData = await postRequest(
+        apiUrl + 'api/auth/login',
+        {
+          'Content-Type': 'application/json;charset=utf-8',
+        },
+        currentUser,
+      );
+
+      const additionalInfo = await getAdditionalInfo(userData.user_id, userData.data.access_token);
+
+      dispatch(
+        signIn({
+          id: userData.user_id,
+          firstname : additionalInfo.data.name,
+          lastname: '',
+          authToken: userData.data.access_token,
+          refreshToken: userData.data.refresh_token,
+          loginTime: new Date(),
+        }),
+      );
+    } catch (e) {
+      dispatch(
+        setError({
+          type: 'user',
+          message: 'Wrong email or password',
+        }),
+      );
+      setIsBusy(false);
+    }
   };
 
   return (

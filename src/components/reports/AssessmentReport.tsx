@@ -1,16 +1,17 @@
 import * as React from 'react';
-import {View, StyleSheet, TouchableWithoutFeedback, Platform} from 'react-native';
+import {View, StyleSheet, TouchableWithoutFeedback, Platform, Dimensions} from 'react-native';
 import { Text, Select, useBreakpointValue, Box } from 'native-base';
 import {useDispatch, useSelector} from 'react-redux';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import NetInfo from '@react-native-community/netinfo';
 import moment from 'moment';
-import {primary, primaryLight, spacingBase} from '../../styles';
+import {primary, spacingBase} from '../../styles';
 import {apiUrl} from '../../config/api';
 import {postRequest} from '../../helpers/general.gelpers';
 import {UInput} from '../CustomInput';
 import {CustomTextArea} from '../CustomTextArea';
 import {UButton} from '../UButton';
+import {Gallery} from '../gallery/Gallery';
 import {
   validationForMinus,
   validationForZeroMinus,
@@ -19,8 +20,8 @@ import {
 import { IAssessmentForm, ILine, IFarm, IUtil } from '../../entities/general';
 import { MainScreenNavigationProp} from '../../entities/general';
 import {RootState} from '../../store/rootReducer';
-import {saveForm} from '../../store/effects/form.effects';
-import {setEditForm, updateForm} from '../../store/actions/form.actions';
+import {saveForm, updateForm} from '../../store/effects/form.effects';
+import {setEditForm} from '../../store/actions/form.actions';
 
 type TProps = {
   navigation: MainScreenNavigationProp;
@@ -69,6 +70,7 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
   const [inactiveButton, setInactiveButton] = React.useState(true);
   const [datePickerShow, setDatePickerShow] = React.useState(false);
   const [formState, setFormState] = React.useState<IAssessmentForm>(defaultAssessment);
+  const [newSeedingRequired, setNewSeedingRequired] = React.useState(false);
 
   React.useEffect(() => {
     if (editForm) {
@@ -85,7 +87,13 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
         }));
 
         const curLine = lines.filter((line: any) => line.id === editForm.line_id);
-        fetchPrevAssessment(editForm.line_id, curLine ? curLine[0].harvest_id : 0);
+        if (curLine[0].last_assess) {
+          setPrevAssess(curLine[0].last_assess);
+          setNewSeedingRequired(false);
+        } else {
+          setPrevAssess(defaultAssessment);
+          setNewSeedingRequired(true);
+        }
       }
     }
   }, []);
@@ -100,6 +108,8 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
       formState.condition_avg === '' ||
       formState.condition_max === '' ||
       formState.condition_min === '' ||
+      formState.condition_score === '' ||
+      formState.blues === '' ||
       formState.tones === ''
     ) {
       setInactiveButton(true);
@@ -124,27 +134,6 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
     navigation.navigate('Main');
   };
 
-  const fetchPrevAssessment = async (line_id: any, harvest_id: any) => {
-    const connection = await NetInfo.fetch();
-    let ass = defaultAssessment;
-    if (connection.isConnected) {
-      const prevAssessment = await postRequest(
-        apiUrl + 'api/farm/line/get-prev-assessment',{
-          'Content-Type': 'application/json;charset=utf-8',
-          Authorization: `Bearer ${currentUser?.authToken}`,
-        },{
-          line_id, harvest_group_id: harvest_id
-        },
-        'POST',
-      );
-      if (prevAssessment)
-        if ('assessment' in prevAssessment) 
-          if (prevAssessment.assessment)
-            ass = prevAssessment.assessment;
-    }
-    setPrevAssess(ass);
-  };
-
   const handleTextChange = (name: string) => {
     const type = name;
     return (text: string) => {
@@ -164,6 +153,7 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
               }));
             }
             setPrevAssess(defaultAssessment);
+            setNewSeedingRequired(false);
             return {
               ...prev,
               [isType]: value,
@@ -174,7 +164,13 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
 
           if (type === 'line_id') {
             const curLine = lineData.filter((line: any) => line.id === value);
-            fetchPrevAssessment(value, curLine ? curLine[0].harvest_id : 0);
+            setPrevAssess(defaultAssessment);
+            if (curLine[0].last_assess) {
+              setPrevAssess(curLine[0].last_assess);
+              setNewSeedingRequired(false);
+            } else {
+              setNewSeedingRequired(true);
+            }
 
             return {
               ...prev,
@@ -246,17 +242,32 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
     };
   };
 
+  const newSeeding = () => {
+    
+  };
+
   return (
     <View style={[
       styles.outerContainer,
-      screenSize === 'base' ? { width: 400 } : { width: 500 }
+      screenSize === 'base' 
+        ? {
+          width: 400
+        } : {
+          width: '75%',
+          minWidth: 500
+        }
     ]}>
+      {newSeedingRequired && <View style={{
+        marginBottom: spacingBase * 4,
+      }}>
+        Go to home screen and add new seeding for this line
+      </View>}
       <View style={screenSize === 'base' ? {} : styles.inlineWrap}>
         <View style={[
           styles.inputStyleBig,
-          screenSize === 'base' ? {} : { width: '48%' }
+          screenSize === 'base' ? {} : { width: '47%' }
         ]}>
-          <Text style={styles.inputStyleSmall}>Select Farm</Text>
+          <Text style={styles.inputStyleSmall}>Select Farm *</Text>
           <View style={styles.pickerStylesContainer}>
             <Select
               style={styles.pickerStyles}
@@ -282,9 +293,9 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
         </View>
         <View style={[
           styles.inputStyleBig,
-          screenSize === 'base' ? {} : { width: '48%' }
+          screenSize === 'base' ? {} : { width: '47%' }
         ]}>
-          <Text style={styles.inputStyleSmall}>Select Line</Text>
+          <Text style={styles.inputStyleSmall}>Select Line *</Text>
           <View style={styles.pickerStylesContainer}>
             <Select
               style={styles.pickerStyles}
@@ -312,11 +323,11 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
       <View style={screenSize === 'base' ? {} : styles.inlineWrap}>
         <View style={[
           styles.inputStyleBig,
-          screenSize === 'base' ? {} : {width: '32%'}
+          screenSize === 'base' ? {} : {width: '31%'}
         ]}>
           <Box>
             <Text style={styles.inputStyleSmall}>
-              Condition Min
+              Condition Min *
               <Text style={[styles.inputStyleSmall, styles.blueFont]}>
                 {` ${prevAssess.condition_min}`}
               </Text>
@@ -332,11 +343,11 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
         </View>
         <View style={[
           styles.inputStyleBig,
-          screenSize === 'base' ? {} : {width: '32%'}
+          screenSize === 'base' ? {} : {width: '31%'}
         ]}>
           <Box>
             <Text style={styles.inputStyleSmall}>
-              Condition Max
+              Condition Max *
               <Text style={[styles.inputStyleSmall, styles.blueFont]}>
                 {` ${prevAssess.condition_max}`}
               </Text>
@@ -352,11 +363,11 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
         </View>
         <View style={[
           styles.inputStyleBig,
-          screenSize === 'base' ? {} : {width: '32%'}
+          screenSize === 'base' ? {} : {width: '31%'}
         ]}>
           <Box>
             <Text style={styles.inputStyleSmall}>
-              Condition Average
+              Condition Average *
               <Text style={[styles.inputStyleSmall, styles.blueFont]}>
                 {` ${prevAssess.condition_avg}`}
               </Text>
@@ -374,11 +385,11 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
       <View style={screenSize === 'base' ? {} : styles.inlineWrap}>
         <View style={[
           styles.inputStyleBig,
-          screenSize === 'base' ? {} : {width: '48%'}
+          screenSize === 'base' ? {} : {width: '47%'}
         ]}>
           <Box>
             <Text style={styles.inputStyleSmall}>
-              Condition Score
+              Condition Score *
               <Text style={[styles.inputStyleSmall, styles.blueFont]}>
                 {` ${prevAssess.condition_score}`}
               </Text>
@@ -394,10 +405,10 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
         </View>
         <View style={[
           styles.inputStyleBig,
-          screenSize === 'base' ? {} : {width: '48%'}
+          screenSize === 'base' ? {} : {width: '47%'}
         ]}>
           <Text style={styles.inputStyleSmall}>
-            Color
+            Color *
             <Text style={[styles.inputStyleSmall, styles.blueFont]}>
                 {` ${prevAssess.color}`}
               </Text>
@@ -430,11 +441,11 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
       <View style={screenSize === 'base' ? {} : styles.inlineWrap}>
         <View style={[
           styles.inputStyleBig,
-          screenSize === 'base' ? {} : {width: '48%'}
+          screenSize === 'base' ? {} : {width: '47%'}
         ]}>
           <Box>
             <Text style={styles.inputStyleSmall}>
-              Blues
+              Blues *
               <Text style={[styles.inputStyleSmall, styles.blueFont]}>
                 {` ${prevAssess.blues}`}
               </Text>
@@ -450,11 +461,11 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
         </View>
         <View style={[
           styles.inputStyleBig,
-          screenSize === 'base' ? {} : {width: '48%'}
+          screenSize === 'base' ? {} : {width: '47%'}
         ]}>
           <Box>
             <Text style={styles.inputStyleSmall}>
-              Tonnes
+              Tonnes *
               <Text style={[styles.inputStyleSmall, styles.blueFont]}>
                 {` ${prevAssess.tones}`}
               </Text>
@@ -472,7 +483,7 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
       <View style={screenSize === 'base' ? {} : styles.inlineWrap}>
         <View style={[
           styles.inputStyleBig,
-          screenSize === 'base' ? {} : {width: '48%'}
+          screenSize === 'base' ? {} : {width: '47%'}
         ]}>
           <View>
             <Text style={styles.inputStyleSmall}>
@@ -495,7 +506,7 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
         }}>
           <View style={[
             styles.inputStyleBig,
-            screenSize === 'base' ? {} : {width: '48%'}
+            screenSize === 'base' ? {} : {width: '47%'}
           ]}>
             <View>
               <Text style={styles.inputStyleSmall}>
@@ -518,6 +529,17 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
             onChange={(text) =>
               handleTextChange('comment')(text)
             }
+          />
+        </View>
+      </View>
+      <View style={styles.inputStyleBig}>
+        <View>
+          <Text style={[
+            styles.inputStyleSmall,
+            { paddingBottom: spacingBase * 2}
+          ]}>Images</Text>
+          <Gallery
+            images={[]}
           />
         </View>
       </View>

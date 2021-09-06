@@ -29,9 +29,9 @@ export const loginUser = (user: TAuthUser): ThunkActionType => {
   return async (dispatch) => {
     try {
       const currentUser = {
-        email: user.email,
-        password: user.password,
-        remember: false,
+        email: user.email.trim(),
+        password: user.password.trim(),
+        remember: true,
       };
 
       const userData = await postRequest(
@@ -44,7 +44,7 @@ export const loginUser = (user: TAuthUser): ThunkActionType => {
 
       const additionalInfo = await getAdditionalInfo(userData.user_id, userData.data.access_token);
 
-      await dispatch(
+      dispatch(
         signIn({
           id: userData.user_id,
           firstname : additionalInfo.data.name,

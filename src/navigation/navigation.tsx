@@ -6,9 +6,8 @@ import SignIn from '../scenes/SignIn';
 import {Report} from '../scenes/Report';
 import Main from '../scenes/Main';
 import Account from '../scenes/Account';
-import {useDispatch, useSelector} from 'react-redux';
+import {useSelector} from 'react-redux';
 import {RootState} from '../store/rootReducer';
-import {getAllFarms} from '../store/effects/farm.effects';
 import {MainScreenNavigationProp, IFarm} from '../entities/general';
 
 export type MainStackParamList = {
@@ -43,20 +42,6 @@ type IProps = {
 };
 
 const MainStackScreen: React.FC<IProps> = ({navigation}) => {
-  const dispatch = useDispatch();
-
-  const farmData: Array<IFarm> = useSelector((state: RootState) => state.farm.allFarms);
-
-  React.useEffect(() => {
-    const getAllData = async () => {
-      await dispatch(getAllFarms());
-    };
-
-    if (farmData.length === 0) {
-      getAllData();
-    }
-  }, [navigation]);
-
   return (
     <MainStack.Navigator>
       <MainStack.Screen options={{headerShown: false}} name={'Main'} component={Main} />
