@@ -223,6 +223,22 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
             return { ...prev, [isType]: validValue, condition_avg: `${conditionAverage}` };
           }
 
+          if (type === 'condition_avg') {
+            const newValue = value.split('');
+            const validValue = newValue
+              .filter((word: any, i: number) => {
+                if (i === 0) {
+                  return Number(word) !== 0;
+                }
+
+                return word;
+              })
+              .filter((word: any) => word !== '-')
+              .join('');
+
+            return { ...prev, [isType]: validValue};
+          }
+
           if (type === 'blues') {
             const validValue = validationForMinus(value);
 
@@ -260,7 +276,9 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
       {newSeedingRequired && <View style={{
         marginBottom: spacingBase * 4,
       }}>
-        Go to home screen and add new seeding for this line
+        <Text>
+          Go to home screen and add new seeding for this line
+        </Text>
       </View>}
       <View style={screenSize === 'base' ? {} : styles.inlineWrap}>
         <View style={[
@@ -290,6 +308,16 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
               }
             </Select>
           </View>
+          {(prevAssess.farm_id !== '') && <View>
+            <Text style={{
+              fontSize: 12,
+            }}>
+              {`Last Assessment Date: ${prevAssess.date_assessment ? moment.unix(Number(prevAssess.date_assessment)).format("YYYY/MM/DD") : ''}`}
+            </Text>
+          </View>}
+          {(formState.farm_id === '') && <Text style={{fontSize: 12, color: 'red'}}>
+            This field is required
+          </Text>}
         </View>
         <View style={[
           styles.inputStyleBig,
@@ -318,6 +346,9 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
               }
             </Select>
           </View>
+          {(formState.line_id === '') && <Text style={{fontSize: 12, color: 'red'}}>
+            This field is required
+          </Text>}
         </View>
       </View>
       <View style={screenSize === 'base' ? {} : styles.inlineWrap}>
@@ -339,6 +370,9 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
                 handleTextChange('condition_min')(text)
               }
             />
+            {(formState.condition_min === '') && <Text style={{fontSize: 12, color: 'red'}}>
+              This field is required
+            </Text>}
           </Box>
         </View>
         <View style={[
@@ -359,6 +393,9 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
                 handleTextChange('condition_max')(text)
               }
             />
+            {(formState.condition_max === '') && <Text style={{fontSize: 12, color: 'red'}}>
+              This field is required
+            </Text>}
           </Box>
         </View>
         <View style={[
@@ -379,6 +416,9 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
                 handleTextChange('condition_avg')(text)
               }
             />
+            {(formState.condition_avg === '') && <Text style={{fontSize: 12, color: 'red'}}>
+              This field is required
+            </Text>}
           </Box>
         </View>
       </View>
@@ -401,6 +441,9 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
                 handleTextChange('condition_score')(text)
               }
             />
+            {(formState.condition_score === '') && <Text style={{fontSize: 12, color: 'red'}}>
+              This field is required
+            </Text>}
           </Box>
         </View>
         <View style={[
@@ -436,6 +479,9 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
               }
             </Select>
           </View>
+          {(formState.color === '') && <Text style={{fontSize: 12, color: 'red'}}>
+              This field is required
+            </Text>}
         </View>
       </View>
       <View style={screenSize === 'base' ? {} : styles.inlineWrap}>
@@ -458,6 +504,9 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
               }
             />
           </Box>
+          {(formState.blues === '') && <Text style={{fontSize: 12, color: 'red'}}>
+              This field is required
+            </Text>}
         </View>
         <View style={[
           styles.inputStyleBig,
@@ -477,6 +526,9 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
                 handleTextChange('tones')(text)
               }
             />
+            {(formState.tones === '') && <Text style={{fontSize: 12, color: 'red'}}>
+              This field is required
+            </Text>}
           </Box>
         </View>
       </View>

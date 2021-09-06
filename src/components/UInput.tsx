@@ -15,6 +15,7 @@ export const UInput: React.FC<IProps> = React.memo(
   ({formikProps, placeholder, name, autoFocus, styles}) => {
     const [isActive, setIsActive] = React.useState(false);
     const [isToggle, setIsToggle] = React.useState(false);
+    const [val, setVal] = React.useState('');
 
     const onTogglePswd = () => {
       setIsToggle(!isToggle);
@@ -37,7 +38,12 @@ export const UInput: React.FC<IProps> = React.memo(
           <Input
             variant="unstyled"
             onFocus={() => setIsActive(true)}
-            onChangeText={formikProps.handleChange(name)}
+            value={val}
+            onChangeText={text => {
+              text = text.replace(/\s/g, '');
+              setVal(text);
+              formikProps.handleChange(name)(text);
+            }}
             autoFocus={autoFocus}
             onBlur={() => {
               setIsActive(false);

@@ -22,7 +22,7 @@ import {UInput, UButton} from '../components';
 import {UIStateInterface} from '../entities/ui.entities';
 
 const validationSchema = yup.object().shape({
-  email: yup.string().label('Email').email().required(),
+  email: yup.string().trim('The email cannot include leading and trailing spaces').label('Email').email().required(),
   password: yup.mixed().label('Password').required(),
 });
 
