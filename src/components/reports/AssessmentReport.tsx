@@ -1,13 +1,10 @@
 import * as React from 'react';
-import {View, StyleSheet, TouchableWithoutFeedback, Platform, Dimensions} from 'react-native';
+import {View, StyleSheet, TouchableWithoutFeedback, Platform} from 'react-native';
 import { Text, Select, useBreakpointValue, Box } from 'native-base';
 import {useDispatch, useSelector} from 'react-redux';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import NetInfo from '@react-native-community/netinfo';
 import moment from 'moment';
 import {primary, spacingBase} from '../../styles';
-import {apiUrl} from '../../config/api';
-import {postRequest} from '../../helpers/general.gelpers';
 import {UInput} from '../CustomInput';
 import {CustomTextArea} from '../CustomTextArea';
 import {UButton} from '../UButton';
@@ -55,7 +52,6 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
     tones: '',
   };
 
-  const {currentUser} = useSelector((state: RootState) => state.user);
   const {editForm} = useSelector((state: RootState) => state.form);
   const farmData: Array<IFarm> = useSelector((state: RootState) => state.farm.allFarms);
   const utilData: Array<IUtil> = useSelector((state: RootState) => state.farm.allUtils);
@@ -99,6 +95,7 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
   }, []);
 
   React.useEffect(() => {
+    console.log(formState);
     if (
       formState.farm_id === '' ||
       formState.line_id === '' ||
@@ -276,14 +273,14 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
       {newSeedingRequired && <View style={{
         marginBottom: spacingBase * 4,
       }}>
-        <Text>
+        <Text style={{color: 'orange'}}>
           Go to home screen and add new seeding for this line
         </Text>
       </View>}
       <View style={screenSize === 'base' ? {} : styles.inlineWrap}>
         <View style={[
           styles.inputStyleBig,
-          screenSize === 'base' ? {} : { width: '47%' }
+          screenSize === 'base' ? {} : { width: '48%' }
         ]}>
           <Text style={styles.inputStyleSmall}>Select Farm *</Text>
           <View style={styles.pickerStylesContainer}>
@@ -321,7 +318,7 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
         </View>
         <View style={[
           styles.inputStyleBig,
-          screenSize === 'base' ? {} : { width: '47%' }
+          screenSize === 'base' ? {} : { width: '48%' }
         ]}>
           <Text style={styles.inputStyleSmall}>Select Line *</Text>
           <View style={styles.pickerStylesContainer}>
@@ -425,7 +422,7 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
       <View style={screenSize === 'base' ? {} : styles.inlineWrap}>
         <View style={[
           styles.inputStyleBig,
-          screenSize === 'base' ? {} : {width: '47%'}
+          screenSize === 'base' ? {} : {width: '48%'}
         ]}>
           <Box>
             <Text style={styles.inputStyleSmall}>
@@ -437,6 +434,7 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
             <UInput
               type="numeric"
               value={formState.condition_score}
+              rightEl='%'
               onChange={(text) =>
                 handleTextChange('condition_score')(text)
               }
@@ -448,7 +446,7 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
         </View>
         <View style={[
           styles.inputStyleBig,
-          screenSize === 'base' ? {} : {width: '47%'}
+          screenSize === 'base' ? {} : {width: '48%'}
         ]}>
           <Text style={styles.inputStyleSmall}>
             Color *
@@ -487,7 +485,7 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
       <View style={screenSize === 'base' ? {} : styles.inlineWrap}>
         <View style={[
           styles.inputStyleBig,
-          screenSize === 'base' ? {} : {width: '47%'}
+          screenSize === 'base' ? {} : {width: '48%'}
         ]}>
           <Box>
             <Text style={styles.inputStyleSmall}>
@@ -510,7 +508,7 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
         </View>
         <View style={[
           styles.inputStyleBig,
-          screenSize === 'base' ? {} : {width: '47%'}
+          screenSize === 'base' ? {} : {width: '48%'}
         ]}>
           <Box>
             <Text style={styles.inputStyleSmall}>
@@ -535,7 +533,7 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
       <View style={screenSize === 'base' ? {} : styles.inlineWrap}>
         <View style={[
           styles.inputStyleBig,
-          screenSize === 'base' ? {} : {width: '47%'}
+          screenSize === 'base' ? {} : {width: '48%'}
         ]}>
           <View>
             <Text style={styles.inputStyleSmall}>
@@ -558,7 +556,7 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
         }}>
           <View style={[
             styles.inputStyleBig,
-            screenSize === 'base' ? {} : {width: '47%'}
+            screenSize === 'base' ? {} : {width: '48%'}
           ]}>
             <View>
               <Text style={styles.inputStyleSmall}>
@@ -640,7 +638,7 @@ const styles = StyleSheet.create({
   inlineWrap: {
     display: 'flex',
     flexDirection: 'row',
-    justifyContent: 'space-around'
+    justifyContent: 'space-between'
   },
   blueFont: {
     color: primary,

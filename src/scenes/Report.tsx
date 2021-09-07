@@ -6,7 +6,6 @@ import {
   View,
   Keyboard,
   ScrollView,
-  Text,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
@@ -19,6 +18,7 @@ import {spacingBase, light} from '../styles';
 import {
   AssessmentReport,
   HarvestReport,
+  SeedingReport,
 } from '../components';
 import {RootState} from '../store/rootReducer';
 import {MainScreenNavigationProp} from '../entities/general';
@@ -39,6 +39,9 @@ export const Report: React.FC<TProps> = ({navigation}) => {
   }
   if (currentForm === 'harvest') {
     heading = 'Mussel Harvest Declaration';
+  }
+  if (currentForm === 'seeding') {
+    heading = 'Mussel Farm Seeding';
   }
 
   return (
@@ -74,6 +77,9 @@ export const Report: React.FC<TProps> = ({navigation}) => {
             )}
             {currentForm === 'harvest' && (
               <HarvestReport navigation={navigation} />
+            )}
+            {currentForm === 'seeding' && (
+              <SeedingReport navigation={navigation} />
             )}
           </View>
         </TouchableWithoutFeedback>

@@ -25,6 +25,20 @@ export const getAllFarms = (): ThunkActionType => {
         await dispatch(setFarms(farmData));
       }
 
+      dispatch(setNetSuiteDataLoading(false));
+    } catch (e) {
+      dispatch(setNetSuiteDataLoading(false));
+    }
+  };
+};
+
+export const getAllUtils = (): ThunkActionType => {
+  return async (dispatch, getState: Function) => {
+    const state: RootState = getState();
+    const {user} = state;
+    try {
+      dispatch(setNetSuiteDataLoading(true));
+
       const utilData = await postRequest(
         apiUrl + 'api/util/user-utils-all',
         {

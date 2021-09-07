@@ -8,7 +8,7 @@ import {
   updateFormToPending,
 } from '../actions/form.actions';
 import {updateAssessment} from '../actions/farm.actions';
-import {getAllFarms} from '../effects/farm.effects';
+import {getAllFarms, getAllUtils} from '../effects/farm.effects';
 
 const sendForm = (form: Array<IFormTypes>, emailNotify: boolean): ThunkActionType => {
   return async (dispatch, getState: Function): Promise<void> => {
@@ -35,6 +35,7 @@ const sendForm = (form: Array<IFormTypes>, emailNotify: boolean): ThunkActionTyp
         }
       }
       await dispatch(getAllFarms());
+      await dispatch(getAllUtils());
     } catch (e) {
       return;
     }

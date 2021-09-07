@@ -12,7 +12,7 @@ import {RootState} from '../store/rootReducer';
 import {setCurrentForm, setEditForm} from '../store/actions/form.actions';
 import {getRefreshToken} from '../store/effects/user.effects';
 import {signOut} from '../store/actions/user.actions';
-import {getAllFarms} from '../store/effects/farm.effects';
+import {getAllFarms, getAllUtils} from '../store/effects/farm.effects';
 import {sendForm} from '../store/effects/form.effects';
 import {MainStackParamList} from '../navigation/navigation';
 import {UButton} from '../components';
@@ -69,9 +69,14 @@ const Main: React.FC<IProps> = React.memo(({navigation}) => {
       await dispatch(getAllFarms());
     };
 
+    const getUtils = async() => {
+      await dispatch(getAllUtils());
+    };
+
     if (farmData.length === 0) {
       getAllData();
     }
+    getUtils();
 
   }, [navigation]);
 
@@ -79,7 +84,7 @@ const Main: React.FC<IProps> = React.memo(({navigation}) => {
     navigation.push(route);
 
   const onFormCreate = (type: string) => {
-    if (type === 'assessment' || type === 'harvest') {
+    if (type === 'assessment' || type === 'harvest' || type === 'seeding') {
       dispatch(setCurrentForm(type));
       handleNavigatePush('Report');
     }

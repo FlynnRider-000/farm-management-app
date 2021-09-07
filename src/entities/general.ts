@@ -45,6 +45,23 @@ export interface IAssessmentForm {
   tones: string,
 }
 
+export interface ISeedingForm {
+  type?: string,
+  name: string,
+  planned_date: string,
+  planned_date_harvest: string,
+  line_length: string,
+  seed_id: string,
+  drop: string,
+  spat_size: string,
+  submersion: string,
+  spacing: string,
+  density: string,
+  floats: string,
+  account_id: string,
+  farm_id: string,
+  line_id: string,
+}
 export interface IHarvestForm {
   type?: string,
   company: string,

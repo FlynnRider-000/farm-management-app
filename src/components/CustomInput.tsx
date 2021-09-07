@@ -8,11 +8,12 @@ interface IProps {
   autoFocus?: boolean | undefined;
   styles?: object;
   type?: string;
+  rightEl?: string;
   onChange: (event: any) => void;
 }
 
 export const UInput: React.FC<IProps> = React.memo(
-  ({value, autoFocus, onChange, type}) => {
+  ({value, autoFocus, onChange, type, rightEl}) => {
     const [isActive, setIsActive] = React.useState(false);
     const [isToggle, setIsToggle] = React.useState(false);
 
@@ -39,6 +40,13 @@ export const UInput: React.FC<IProps> = React.memo(
             onBlur={() => {
               setIsActive(false);
             }}
+            InputRightElement={
+              rightEl !== ''
+              ? (<Text style={style.rightElement}>
+                {rightEl}
+              </Text>)
+              : <></>
+            }
           />
         </View>
       </View>
