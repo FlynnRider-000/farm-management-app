@@ -55,9 +55,10 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
   const {editForm} = useSelector((state: RootState) => state.form);
   const farmData: Array<IFarm> = useSelector((state: RootState) => state.farm.allFarms);
   const utilData: Array<IUtil> = useSelector((state: RootState) => state.farm.allUtils);
+  const {pendingForms} = useSelector((state: RootState) => state.form);
+  const pendingSeedings = pendingForms.filter(form => form.type === 'seeding');
 
   const [lineData, setLineData] = React.useState<Array<ILine>>([]);
-
   const [prevAssess, setPrevAssess] = React.useState<IAssessmentForm>(defaultAssessment);
   const [colors, setColors] = React.useState<Array<IUtil>>([]);
   const [dateType, setDateType] = React.useState('assess');
@@ -67,13 +68,15 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
   const [datePickerShow, setDatePickerShow] = React.useState(false);
   const [formState, setFormState] = React.useState<IAssessmentForm>(defaultAssessment);
   const [newSeedingRequired, setNewSeedingRequired] = React.useState(false);
+  const [error, showError] = React.useState(false);
 
   React.useEffect(() => {
-    if (editForm) {
-      setFormState(editForm);
-      setAssessDate(new Date(Number(editForm.date_assessment) * 1000));
-      setPHaverstDate(new Date(Number(editForm.planned_date_harvest) * 1000));
-      const curFarm: Array<IFarm> = farmData.filter((farm: any) => farm.id === editForm.farm_id);
+    const edForm = editForm as IAssessmentForm;
+    if (edForm) {
+      setFormState(edForm);
+      setAssessDate(new Date(Number(edForm.date_assessment) * 1000));
+      setPHaverstDate(new Date(Number(edForm.planned_date_harvest) * 1000));
+      const curFarm: Array<IFarm> = farmData.filter((farm: any) => farm.id === edForm.farm_id);
 
       if (curFarm) {
         const lines = curFarm[0].lines ? curFarm[0].lines : [];
@@ -82,20 +85,24 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
           return util.account_id === curFarm[0].acc_id && util.type === 'color';
         }));
 
-        const curLine = lines.filter((line: any) => line.id === editForm.line_id);
+        const curLine = lines.filter((line: any) => line.id === edForm.line_id);
         if (curLine[0].last_assess) {
           setPrevAssess(curLine[0].last_assess);
           setNewSeedingRequired(false);
         } else {
+          const seedExist = pendingSeedings.filter(seed => seed.line_id === edForm.line_id)
+          if (seedExist.length) {
+            setNewSeedingRequired(false);
+          } else {
+            setNewSeedingRequired(true);
+          }
           setPrevAssess(defaultAssessment);
-          setNewSeedingRequired(true);
         }
       }
     }
   }, []);
 
   React.useEffect(() => {
-    console.log(formState);
     if (
       formState.farm_id === '' ||
       formState.line_id === '' ||
@@ -116,6 +123,11 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
   }, [formState]);
 
   const handleFormSubmit = async () => {
+    if (inactiveButton) {
+      showError(true);
+      return;
+    }
+    showError(false);
     const form = {
       ...formState,
       type: 'assessment',
@@ -161,18 +173,25 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
 
           if (type === 'line_id') {
             const curLine = lineData.filter((line: any) => line.id === value);
+            let harvest_id = curLine ? curLine[0].harvest_id : '0';
             setPrevAssess(defaultAssessment);
             if (curLine[0].last_assess) {
               setPrevAssess(curLine[0].last_assess);
               setNewSeedingRequired(false);
             } else {
-              setNewSeedingRequired(true);
+              const seedExist = pendingSeedings.filter(seed => seed.line_id === value)
+              if (seedExist.length) {
+                setNewSeedingRequired(false);
+                harvest_id = '-1';
+              } else {
+                setNewSeedingRequired(true);
+              }
             }
 
             return {
               ...prev,
               [isType]: value,
-              'harvest_group_id': curLine ? curLine[0].harvest_id : 0,
+              'harvest_group_id': harvest_id,
             };
           }
 
@@ -184,17 +203,7 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
           }
 
           if (type === 'condition_min') {
-            const newValue = value.split('');
-            const validValue = newValue
-              .filter((word: any, i: number) => {
-                if (i === 0) {
-                  return Number(word) !== 0;
-                }
-
-                return word;
-              })
-              .filter((word: any) => word !== '-')
-              .join('');
+            const validValue = validationForZeroMinus(value);
             const conditionAverage = Math.round(
               (Number(formState.condition_max) + Number(validValue)) / 2,
             );
@@ -202,17 +211,7 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
           }
 
           if (type === 'condition_max') {
-            const newValue = value.split('');
-            const validValue = newValue
-              .filter((word: any, i: number) => {
-                if (i === 0) {
-                  return Number(word) !== 0;
-                }
-
-                return word;
-              })
-              .filter((word: any) => word !== '-')
-              .join('');
+            const validValue = validationForZeroMinus(value);
 
             const conditionAverage = Math.round(
               (Number(formState.condition_min) + Number(validValue)) / 2,
@@ -221,17 +220,7 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
           }
 
           if (type === 'condition_avg') {
-            const newValue = value.split('');
-            const validValue = newValue
-              .filter((word: any, i: number) => {
-                if (i === 0) {
-                  return Number(word) !== 0;
-                }
-
-                return word;
-              })
-              .filter((word: any) => word !== '-')
-              .join('');
+            const validValue = validationForZeroMinus(value);
 
             return { ...prev, [isType]: validValue};
           }
@@ -255,10 +244,6 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
     };
   };
 
-  const newSeeding = () => {
-    
-  };
-
   return (
     <View style={[
       styles.outerContainer,
@@ -280,7 +265,7 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
       <View style={screenSize === 'base' ? {} : styles.inlineWrap}>
         <View style={[
           styles.inputStyleBig,
-          screenSize === 'base' ? {} : { width: '48%' }
+          screenSize === 'base' ? {} : { width: '49%' }
         ]}>
           <Text style={styles.inputStyleSmall}>Select Farm *</Text>
           <View style={styles.pickerStylesContainer}>
@@ -312,13 +297,13 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
               {`Last Assessment Date: ${prevAssess.date_assessment ? moment.unix(Number(prevAssess.date_assessment)).format("YYYY/MM/DD") : ''}`}
             </Text>
           </View>}
-          {(formState.farm_id === '') && <Text style={{fontSize: 12, color: 'red'}}>
+          {(formState.farm_id === '' && error) && <Text style={{fontSize: 12, color: 'red'}}>
             This field is required
           </Text>}
         </View>
         <View style={[
           styles.inputStyleBig,
-          screenSize === 'base' ? {} : { width: '48%' }
+          screenSize === 'base' ? {} : { width: '49%' }
         ]}>
           <Text style={styles.inputStyleSmall}>Select Line *</Text>
           <View style={styles.pickerStylesContainer}>
@@ -331,9 +316,21 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
                 // @ts-ignore
                 lineData.map(
                   ({line_name, id, harvest_id}, i: number) => {
+                    let lineName = '';
+                    if (harvest_id) {
+                      lineName = line_name;// ( Assessment not available )
+                    } else {
+                      const seedExist = pendingSeedings.filter(seed => seed.line_id === id);
+                      if (seedExist.length) {
+                        lineName = line_name;// ( Assessment not available )
+                      } else {
+                        lineName = line_name + ' ( Assessment not available ) ';
+                      }
+                    }
+                    
                     return (
                       <Select.Item
-                        label={`${line_name + (harvest_id ? '' : ' ( Assessment not available ) ')}`}
+                        label={lineName}
                         value={id}
                         key={id}
                       />
@@ -343,7 +340,7 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
               }
             </Select>
           </View>
-          {(formState.line_id === '') && <Text style={{fontSize: 12, color: 'red'}}>
+          {(formState.line_id === '' && error) && <Text style={{fontSize: 12, color: 'red'}}>
             This field is required
           </Text>}
         </View>
@@ -367,7 +364,7 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
                 handleTextChange('condition_min')(text)
               }
             />
-            {(formState.condition_min === '') && <Text style={{fontSize: 12, color: 'red'}}>
+            {(formState.condition_min === '' && error) && <Text style={{fontSize: 12, color: 'red'}}>
               This field is required
             </Text>}
           </Box>
@@ -390,7 +387,7 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
                 handleTextChange('condition_max')(text)
               }
             />
-            {(formState.condition_max === '') && <Text style={{fontSize: 12, color: 'red'}}>
+            {(formState.condition_max === '' && error) && <Text style={{fontSize: 12, color: 'red'}}>
               This field is required
             </Text>}
           </Box>
@@ -413,7 +410,7 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
                 handleTextChange('condition_avg')(text)
               }
             />
-            {(formState.condition_avg === '') && <Text style={{fontSize: 12, color: 'red'}}>
+            {(formState.condition_avg === '' && error) && <Text style={{fontSize: 12, color: 'red'}}>
               This field is required
             </Text>}
           </Box>
@@ -422,7 +419,7 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
       <View style={screenSize === 'base' ? {} : styles.inlineWrap}>
         <View style={[
           styles.inputStyleBig,
-          screenSize === 'base' ? {} : {width: '48%'}
+          screenSize === 'base' ? {} : {width: '49%'}
         ]}>
           <Box>
             <Text style={styles.inputStyleSmall}>
@@ -439,14 +436,14 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
                 handleTextChange('condition_score')(text)
               }
             />
-            {(formState.condition_score === '') && <Text style={{fontSize: 12, color: 'red'}}>
+            {(formState.condition_score === '' && error) && <Text style={{fontSize: 12, color: 'red'}}>
               This field is required
             </Text>}
           </Box>
         </View>
         <View style={[
           styles.inputStyleBig,
-          screenSize === 'base' ? {} : {width: '48%'}
+          screenSize === 'base' ? {} : {width: '49%'}
         ]}>
           <Text style={styles.inputStyleSmall}>
             Color *
@@ -477,7 +474,7 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
               }
             </Select>
           </View>
-          {(formState.color === '') && <Text style={{fontSize: 12, color: 'red'}}>
+          {(formState.color === '' && error) && <Text style={{fontSize: 12, color: 'red'}}>
               This field is required
             </Text>}
         </View>
@@ -485,7 +482,7 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
       <View style={screenSize === 'base' ? {} : styles.inlineWrap}>
         <View style={[
           styles.inputStyleBig,
-          screenSize === 'base' ? {} : {width: '48%'}
+          screenSize === 'base' ? {} : {width: '49%'}
         ]}>
           <Box>
             <Text style={styles.inputStyleSmall}>
@@ -502,13 +499,13 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
               }
             />
           </Box>
-          {(formState.blues === '') && <Text style={{fontSize: 12, color: 'red'}}>
+          {(formState.blues === '' && error) && <Text style={{fontSize: 12, color: 'red'}}>
               This field is required
             </Text>}
         </View>
         <View style={[
           styles.inputStyleBig,
-          screenSize === 'base' ? {} : {width: '48%'}
+          screenSize === 'base' ? {} : {width: '49%'}
         ]}>
           <Box>
             <Text style={styles.inputStyleSmall}>
@@ -524,7 +521,7 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
                 handleTextChange('tones')(text)
               }
             />
-            {(formState.tones === '') && <Text style={{fontSize: 12, color: 'red'}}>
+            {(formState.tones === '' && error) && <Text style={{fontSize: 12, color: 'red'}}>
               This field is required
             </Text>}
           </Box>
@@ -533,7 +530,7 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
       <View style={screenSize === 'base' ? {} : styles.inlineWrap}>
         <View style={[
           styles.inputStyleBig,
-          screenSize === 'base' ? {} : {width: '48%'}
+          screenSize === 'base' ? {} : {width: '49%'}
         ]}>
           <View>
             <Text style={styles.inputStyleSmall}>
@@ -556,7 +553,7 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
         }}>
           <View style={[
             styles.inputStyleBig,
-            screenSize === 'base' ? {} : {width: '48%'}
+            screenSize === 'base' ? {} : {width: '49%'}
           ]}>
             <View>
               <Text style={styles.inputStyleSmall}>
@@ -595,7 +592,7 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
       </View>
       <UButton
         onPress={() => handleFormSubmit()}
-        disabled={inactiveButton}
+        disabled={newSeedingRequired}
         label={editForm ? 'Update' : 'Submit' }
         fullWidth
         isLoading={false}

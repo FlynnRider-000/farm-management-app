@@ -3,14 +3,10 @@ import {View, StyleSheet, TouchableWithoutFeedback, Platform} from 'react-native
 import { Text, Select, useBreakpointValue, Box } from 'native-base';
 import {useDispatch, useSelector} from 'react-redux';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import moment from 'moment';
 import {primary, spacingBase} from '../../styles';
 import {UInput} from '../CustomInput';
-import {CustomTextArea} from '../CustomTextArea';
 import {UButton} from '../UButton';
-import {Gallery} from '../gallery/Gallery';
 import {
-  validationForMinus,
   validationForZeroMinus,
   toggleSecondMillisecond,
 } from '../../helpers/form.helpers';
@@ -55,6 +51,7 @@ export const SeedingReport: React.FC<TProps> = ({navigation}) => {
   const {editForm} = useSelector((state: RootState) => state.form);
   const farmData: Array<IFarm> = useSelector((state: RootState) => state.farm.allFarms);
   const utilData: Array<IUtil> = useSelector((state: RootState) => state.farm.allUtils);
+  const {pendingForms} = useSelector((state: RootState) => state.form);
 
   const [lineData, setLineData] = React.useState<Array<ILine>>([]);
 
@@ -66,38 +63,29 @@ export const SeedingReport: React.FC<TProps> = ({navigation}) => {
   const [seedExist, setSeedExist] = React.useState(false);
   const [datePickerShow, setDatePickerShow] = React.useState(false);
   const [formState, setFormState] = React.useState<ISeedingForm>(defaultSeeding);
+  const [error, showError] = React.useState(false);
 
-  // React.useEffect(() => {
-  //   if (editForm) {
-  //     setFormState(editForm);
-  //     setAssessDate(new Date(Number(editForm.date_assessment) * 1000));
-  //     setPHaverstDate(new Date(Number(editForm.planned_date_harvest) * 1000));
-  //     const curFarm: Array<IFarm> = farmData.filter((farm: any) => farm.id === editForm.farm_id);
+  React.useEffect(() => {
+    const edForm = editForm as ISeedingForm;
+    if (edForm) {
+      setFormState(edForm);
+      setSeedDate(new Date(Number(edForm.planned_date) * 1000));
+      setPHaverstDate(new Date(Number(edForm.planned_date_harvest) * 1000));
+      const curFarm: Array<IFarm> = farmData.filter((farm: any) => farm.id === edForm.farm_id);
 
-  //     if (curFarm) {
-  //       const lines = curFarm[0].lines ? curFarm[0].lines : [];
-  //       setLineData(lines);
-  //       setSeedTypes(utilData.filter(util => {
-  //         return util.account_id === curFarm[0].acc_id && util.type === 'color';
-  //       }));
-
-  //       const curLine = lines.filter((line: any) => line.id === editForm.line_id);
-  //       if (curLine[0].last_assess) {
-  //         setPrevAssess(curLine[0].last_assess);
-  //         setNewSeedingRequired(false);
-  //       } else {
-  //         setPrevAssess(defaultAssessment);
-  //         setNewSeedingRequired(true);
-  //       }
-  //     }
-  //   }
-  // }, []);
+      if (curFarm) {
+        const lines = curFarm[0].lines ? curFarm[0].lines : [];
+        setLineData(lines);
+        setSeedTypes(utilData.filter(util => {
+          return util.account_id === curFarm[0].acc_id && util.type === 'seedtype';
+        }));
+      }
+    }
+  }, []);
 
   React.useEffect(() => {
     if (
       formState.name === '' ||
-      formState.planned_date === '' ||
-      formState.planned_date_harvest === '' ||
       formState.line_length === '' ||
       formState.seed_id === '' ||
       formState.drop === '' ||
@@ -115,19 +103,24 @@ export const SeedingReport: React.FC<TProps> = ({navigation}) => {
   }, [formState]);
 
   const handleFormSubmit = async () => {
-    // const form = {
-    //   ...formState,
-    //   type: 'seeding',
-    //   date_assessment: `${toggleSecondMillisecond(assessDate.getTime())}`,
-    //   planned_date_harvest: `${toggleSecondMillisecond(Number(pHarvestDate.getTime()))}`,
-    // }
-    // if (editForm) {
-    //   await dispatch(updateForm(editForm, form));
-    //   await dispatch(setEditForm(null));
-    // } else {
-    //   await dispatch(saveForm(form));
-    // }
-    // navigation.navigate('Main');
+    if (inactiveButton || seedExist) {
+      showError(true);
+      return;
+    }
+    showError(false);
+    const form = {
+      ...formState,
+      type: 'seeding',
+      planned_date: `${toggleSecondMillisecond(seedDate.getTime())}`,
+      planned_date_harvest: `${toggleSecondMillisecond(Number(pHarvestDate.getTime()))}`,
+    }
+    if (editForm) {
+      await dispatch(updateForm(editForm, form));
+      await dispatch(setEditForm(null));
+    } else {
+      await dispatch(saveForm(form));
+    }
+    navigation.navigate('Main');
   };
 
   const handleTextChange = (name: string) => {
@@ -167,10 +160,14 @@ export const SeedingReport: React.FC<TProps> = ({navigation}) => {
               setSeedExist(false);
             }
 
+            const form = pendingForms.filter(form => form.type === 'seeding' && form.line_id === value);
+            if (form.length) {
+              setSeedExist(true);
+            }
+
             return {
               ...prev,
               [isType]: value,
-              'harvest_group_id': curLine ? curLine[0].harvest_id : 0,
             };
           }
 
@@ -183,17 +180,7 @@ export const SeedingReport: React.FC<TProps> = ({navigation}) => {
             type === 'density' ||
             type === 'floats'
           ) {
-            const newValue = value.split('');
-            const validValue = newValue
-              .filter((word: any, i: number) => {
-                if (i === 0) {
-                  return Number(word) !== 0;
-                }
-
-                return word;
-              })
-              .filter((word: any) => word !== '-')
-              .join('');
+            const validValue = validationForZeroMinus(value);
             return { ...prev, [isType]: validValue };
           }
 
@@ -231,6 +218,7 @@ export const SeedingReport: React.FC<TProps> = ({navigation}) => {
           <Text style={styles.inputStyleSmall}>Select Farm *</Text>
           <View style={styles.pickerStylesContainer}>
             <Select
+              isDisabled={editForm !== null}
               style={styles.pickerStyles}
               selectedValue={formState.farm_id}
               onValueChange={(label) => handleTextChange('farm_id')(label)}
@@ -251,7 +239,7 @@ export const SeedingReport: React.FC<TProps> = ({navigation}) => {
               }
             </Select>
           </View>
-          {(formState.farm_id === '') && <Text style={{fontSize: 12, color: 'red'}}>
+          {(formState.farm_id === '' && error) && <Text style={{fontSize: 12, color: 'red'}}>
             This field is required
           </Text>}
         </View>
@@ -264,6 +252,7 @@ export const SeedingReport: React.FC<TProps> = ({navigation}) => {
             <Select
               style={styles.pickerStyles}
               selectedValue={formState.line_id}
+              isDisabled={editForm !== null}
               onValueChange={(label) => handleTextChange('line_id')(label)}
               placeholder='Select Line'>
               {
@@ -282,7 +271,7 @@ export const SeedingReport: React.FC<TProps> = ({navigation}) => {
               }
             </Select>
           </View>
-          {(formState.line_id === '') && <Text style={{fontSize: 12, color: 'red'}}>
+          {(formState.line_id === '' && error) && <Text style={{fontSize: 12, color: 'red'}}>
             This field is required
           </Text>}
         </View>
@@ -303,7 +292,7 @@ export const SeedingReport: React.FC<TProps> = ({navigation}) => {
                 handleTextChange('name')(text)
               }
             />
-            {(formState.name === '') && <Text style={{fontSize: 12, color: 'red'}}>
+            {(formState.name === '' && error) && <Text style={{fontSize: 12, color: 'red'}}>
               This field is required
             </Text>}
           </Box>
@@ -360,7 +349,7 @@ export const SeedingReport: React.FC<TProps> = ({navigation}) => {
                 handleTextChange('line_length')(text)
               }
             />
-            {(formState.line_length === '') && <Text style={{fontSize: 12, color: 'red'}}>
+            {(formState.line_length === '' && error) && <Text style={{fontSize: 12, color: 'red'}}>
               This field is required
             </Text>}
           </Box>
@@ -386,7 +375,7 @@ export const SeedingReport: React.FC<TProps> = ({navigation}) => {
                     return (
                       <Select.Item
                         label={name}
-                        value={name}
+                        value={id}
                         key={id}
                       />
                     );
@@ -395,7 +384,7 @@ export const SeedingReport: React.FC<TProps> = ({navigation}) => {
               }
             </Select>
           </View>
-          {(formState.seed_id === '') && <Text style={{fontSize: 12, color: 'red'}}>
+          {(formState.seed_id === '' && error) && <Text style={{fontSize: 12, color: 'red'}}>
               This field is required
             </Text>}
         </View>
@@ -418,7 +407,7 @@ export const SeedingReport: React.FC<TProps> = ({navigation}) => {
               }
             />
           </Box>
-          {(formState.drop === '') && <Text style={{fontSize: 12, color: 'red'}}>
+          {(formState.drop === '' && error) && <Text style={{fontSize: 12, color: 'red'}}>
               This field is required
             </Text>}
         </View>
@@ -438,7 +427,7 @@ export const SeedingReport: React.FC<TProps> = ({navigation}) => {
                 handleTextChange('spat_size')(text)
               }
             />
-            {(formState.spat_size === '') && <Text style={{fontSize: 12, color: 'red'}}>
+            {(formState.spat_size === '' && error) && <Text style={{fontSize: 12, color: 'red'}}>
               This field is required
             </Text>}
           </Box>
@@ -462,7 +451,7 @@ export const SeedingReport: React.FC<TProps> = ({navigation}) => {
               }
             />
           </Box>
-          {(formState.submersion === '') && <Text style={{fontSize: 12, color: 'red'}}>
+          {(formState.submersion === '' && error) && <Text style={{fontSize: 12, color: 'red'}}>
               This field is required
             </Text>}
         </View>
@@ -482,7 +471,7 @@ export const SeedingReport: React.FC<TProps> = ({navigation}) => {
                 handleTextChange('spacing')(text)
               }
             />
-            {(formState.spacing === '') && <Text style={{fontSize: 12, color: 'red'}}>
+            {(formState.spacing === '' && error) && <Text style={{fontSize: 12, color: 'red'}}>
               This field is required
             </Text>}
           </Box>
@@ -505,7 +494,7 @@ export const SeedingReport: React.FC<TProps> = ({navigation}) => {
               }
             />
           </Box>
-          {(formState.density === '') && <Text style={{fontSize: 12, color: 'red'}}>
+          {(formState.density === '' && error) && <Text style={{fontSize: 12, color: 'red'}}>
               This field is required
             </Text>}
         </View>
@@ -524,7 +513,7 @@ export const SeedingReport: React.FC<TProps> = ({navigation}) => {
                 handleTextChange('floats')(text)
               }
             />
-            {(formState.floats === '') && <Text style={{fontSize: 12, color: 'red'}}>
+            {(formState.floats === '' && error) && <Text style={{fontSize: 12, color: 'red'}}>
               This field is required
             </Text>}
           </Box>
@@ -532,7 +521,7 @@ export const SeedingReport: React.FC<TProps> = ({navigation}) => {
       </View>
       <UButton
         onPress={() => handleFormSubmit()}
-        disabled={inactiveButton && seedExist}
+        disabled={seedExist}
         label={editForm ? 'Update' : 'Submit' }
         fullWidth
         isLoading={false}

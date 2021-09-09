@@ -1,5 +1,6 @@
 import {FORM_TYPES} from '../types';
 import {changeFormStatus} from './helpers';
+import {IFormTypes} from '../../entities/general';
 import {FormStateType, TFormAction} from '../../entities/form.entities';
 
 const INITIAL_STATE: FormStateType = {
@@ -34,7 +35,7 @@ export const formReducer = (
     case FORM_TYPES.SET_FORM_SENT:
       return <FormStateType>{
         ...state,
-        pendingForms: changeFormStatus(state.pendingForms, action.payload),
+        pendingForms: changeFormStatus(state.pendingForms, action.payload as IFormTypes),
       };
     case FORM_TYPES.SET_CURRENT_FORM:
       return <FormStateType>{

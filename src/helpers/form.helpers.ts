@@ -1,9 +1,8 @@
 import moment from 'moment';
 import {apiUrl} from '../config/api';
 
-export const getFormUrl = (type: string) => {
-  if (type === 'assessment')
-    return apiUrl + 'api/farm/line/assessment/add-assessments';
+export const getFormUrl = () => {
+  return apiUrl + 'api/farm/sync-data-from-app';
 };
 
 export const validationForZeroMinus = (value: string | number): string => {

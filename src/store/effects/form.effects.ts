@@ -1,7 +1,7 @@
 import {RootState} from '../rootReducer';
 import {getFormUrl} from '../../helpers/form.helpers';
 import {postRequest} from '../../helpers/general.gelpers';
-import {ThunkActionType, IFormTypes} from '../../entities/general';
+import {ThunkActionType, IFormTypes, IAssessmentForm} from '../../entities/general';
 import {
   removeFormFromPending,
   saveFormToPending,
@@ -17,7 +17,7 @@ const sendForm = (form: Array<IFormTypes>, emailNotify: boolean): ThunkActionTyp
 
     try {
       const sendForm = await postRequest(
-        getFormUrl(form[0].type),
+        getFormUrl(),
         {
           'Accept': "application/json",
           'Content-Type': 'application/json',
@@ -46,7 +46,7 @@ const saveForm = (form: IFormTypes): ThunkActionType => {
   return async (dispatch, getState: Function): Promise<void> => {
     await dispatch(saveFormToPending(form));
     if (form.type === 'assessment') {
-      await dispatch(updateAssessment(form));
+      await dispatch(updateAssessment(form as IAssessmentForm));
     }
   };
 };
@@ -55,7 +55,7 @@ const updateForm = (oldForm: IFormTypes, newForm: IFormTypes): ThunkActionType =
   return async (dispatch, getState: Function): Promise<void> => {
     await dispatch(updateFormToPending(oldForm, newForm));
     if (newForm.type === 'assessment') {
-      await dispatch(updateAssessment(newForm));
+      await dispatch(updateAssessment(newForm as IAssessmentForm));
     }
   };
 };

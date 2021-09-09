@@ -101,4 +101,5 @@ export interface IHarvestForm {
 }
 
 export type IFormTypes =
-  | IAssessmentForm;
+  | IAssessmentForm
+  | ISeedingForm;

@@ -22,8 +22,11 @@ export const farmReducer = (state = INITIAL_STATE, action: any) => {
                 if (`${farm.lines[i].last_assess.date_assessment}` <= `${action.payload.date_assessment}`) {
                   newLine.last_assess = action.payload;
                 }
+              } else {
+                newLine.last_assess = action.payload;
+                newLine.harvest_id = '-1';
               }
-              newFarm.lines.push(newLine);  
+              newFarm.lines.push(newLine);
             } else {
               newFarm.lines.push(farm.lines[i]);
             }
