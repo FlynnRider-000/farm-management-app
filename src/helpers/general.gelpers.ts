@@ -12,7 +12,7 @@ export const postRequest = async (
   url: string,
   headers: THeaders,
   data?: object,
-  method: string='POST',
+  method: string = 'POST',
 ) => {
   try {
     let response = null;
@@ -57,5 +57,5 @@ const reverseValues = (val: string[]): string[] => val.reverse();
 const joinValues = (val: string[]): string => val.join('-');
 export const getUSADateFormat = (date: string): string =>
   joinValues(reverseValues(splitValues(getOnlyDate(date))));
-export const getNetSuiteDateFormat = (date: Date) => 
-  date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + (date.getDate())
+export const getNetSuiteDateFormat = (date: Date) =>
+  date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate();

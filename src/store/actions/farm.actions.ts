@@ -1,5 +1,5 @@
 import {FARM_TYPES} from '../types';
-import {IAssessmentForm} from '../../entities/general';  
+import {IAssessmentForm} from '../../entities/general';
 import {IFarm, IUtil} from '../../entities/general';
 
 export const setFarms = (farms: Array<IFarm>) => ({

@@ -9,17 +9,10 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import {
-  Heading,
-  ArrowBackIcon,
-} from 'native-base';
+import {Heading, ArrowBackIcon} from 'native-base';
 import {useSelector, useDispatch} from 'react-redux';
 import {spacingBase, light} from '../styles';
-import {
-  AssessmentReport,
-  HarvestReport,
-  SeedingReport,
-} from '../components';
+import {AssessmentReport, HarvestReport, SeedingReport} from '../components';
 import {RootState} from '../store/rootReducer';
 import {MainScreenNavigationProp} from '../entities/general';
 import {setEditForm} from '../store/actions/form.actions';
@@ -49,26 +42,24 @@ export const Report: React.FC<TProps> = ({navigation}) => {
       // @ts-ignore
       behavior={Platform.OS === 'ios' ? 'position' : null}
       keyboardVerticalOffset={-5}>
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-      >
+      <ScrollView contentInsetAdjustmentBehavior="automatic">
         <TouchableWithoutFeedback
-          style={{backgroundColor: 'white'}}
-          onPress={() => Keyboard.dismiss()}
-        >
+          style={styles.bgColorWhite}
+          onPress={() => Keyboard.dismiss()}>
           <View style={styles.formContainer}>
             <View style={styles.topBarContainer}>
-              <TouchableOpacity onPress={async () => {
-                if (editForm) {
-                  await dispatch(setEditForm(null));
-                }
-                navigation.goBack();
-              }}>
+              <TouchableOpacity
+                onPress={async () => {
+                  if (editForm) {
+                    await dispatch(setEditForm(null));
+                  }
+                  navigation.goBack();
+                }}>
                 <View style={styles.buttonWrap}>
-                  <ArrowBackIcon size={6}/>
+                  <ArrowBackIcon size={6} />
                 </View>
               </TouchableOpacity>
-              <Heading size="sm" style={{flex: 1, paddingLeft: spacingBase * 3}}>
+              <Heading size="sm" style={styles.headingText}>
                 {heading}
               </Heading>
             </View>
@@ -94,6 +85,10 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 0,
   },
+  headingText: {
+    flex: 1,
+    paddingLeft: spacingBase * 3,
+  },
   buttonWrap: {
     borderRadius: spacingBase * 1.5,
     borderWidth: 1,
@@ -107,9 +102,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     padding: spacingBase * 2,
     shadowColor: 'grey',
-    shadowOffset: { width: 0, height: 5 },
+    shadowOffset: {width: 0, height: 5},
     shadowOpacity: 0.34,
     shadowRadius: 1,
     elevation: 10,
-  }
+  },
+  bgColorWhite: {
+    backgroundColor: 'white',
+  },
 });

@@ -2,17 +2,23 @@ import * as React from 'react';
 import {Text, View, StyleSheet, TouchableWithoutFeedback} from 'react-native';
 import {FormikProps, FormikValues} from 'formik';
 import {Input} from 'native-base';
-import {primary, spacingBase, primaryLight, red, redLight, grey} from '../styles';
+import {
+  primary,
+  spacingBase,
+  primaryLight,
+  red,
+  redLight,
+  grey,
+} from '../styles';
 interface IProps {
   placeholder: string;
   name: string;
   formikProps: FormikProps<FormikValues>;
   autoFocus?: boolean | undefined;
-  styles?: object;
 }
 
 export const UInput: React.FC<IProps> = React.memo(
-  ({formikProps, placeholder, name, autoFocus, styles}) => {
+  ({formikProps, placeholder, name, autoFocus}) => {
     const [isActive, setIsActive] = React.useState(false);
     const [isToggle, setIsToggle] = React.useState(false);
     const [val, setVal] = React.useState('');
@@ -26,20 +32,20 @@ export const UInput: React.FC<IProps> = React.memo(
         <View>
           <Text style={style.label}>{placeholder}</Text>
         </View>
-        <View style={[
-          style.input,
-          formikProps.errors[name] && formikProps.touched[name]
-            ? style.inputError
-            : isActive 
+        <View
+          style={[
+            style.input,
+            formikProps.errors[name] && formikProps.touched[name]
+              ? style.inputError
+              : isActive
               ? style.inputFocus
               : style.inputNormal,
-          ]
-        }>
+          ]}>
           <Input
             variant="unstyled"
             onFocus={() => setIsActive(true)}
             value={val}
-            onChangeText={text => {
+            onChangeText={(text) => {
               text = text.replace(/\s/g, '');
               setVal(text);
               formikProps.handleChange(name)(text);
@@ -51,13 +57,15 @@ export const UInput: React.FC<IProps> = React.memo(
             }}
             secureTextEntry={name === 'password' && !isToggle}
             InputRightElement={
-              name === 'password'
-              ? (<TouchableWithoutFeedback onPress={onTogglePswd}>
-                <Text style={style.rightElement}>
-                  {isToggle ? 'hide' : 'view'}
-                </Text>
-              </TouchableWithoutFeedback>)
-              : <></>
+              name === 'password' ? (
+                <TouchableWithoutFeedback onPress={onTogglePswd}>
+                  <Text style={style.rightElement}>
+                    {isToggle ? 'hide' : 'view'}
+                  </Text>
+                </TouchableWithoutFeedback>
+              ) : (
+                <></>
+              )
             }
           />
         </View>
