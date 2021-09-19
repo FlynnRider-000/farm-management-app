@@ -3,7 +3,6 @@ import {
   SafeAreaView,
   View,
   StyleSheet,
-  Image,
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
   Keyboard,
@@ -11,7 +10,7 @@ import {
 import * as yup from 'yup';
 import {Formik, FormikProps, FormikValues} from 'formik';
 import {useDispatch, useSelector} from 'react-redux';
-import {Text, Heading, useBreakpointValue } from 'native-base';
+import {Text, Heading, useBreakpointValue} from 'native-base';
 import {apiUrl} from '../config/api';
 import {postRequest} from '../helpers/general.gelpers';
 import {RootState} from '../store/rootReducer';
@@ -22,7 +21,12 @@ import {UInput, UButton} from '../components';
 import {UIStateInterface} from '../entities/ui.entities';
 
 const validationSchema = yup.object().shape({
-  email: yup.string().trim('The email cannot include leading and trailing spaces').label('Email').email().required(),
+  email: yup
+    .string()
+    .trim('The email cannot include leading and trailing spaces')
+    .label('Email')
+    .email()
+    .required(),
   password: yup.mixed().label('Password').required(),
 });
 
@@ -74,12 +78,15 @@ const SignIn = () => {
         currentUser,
       );
 
-      const additionalInfo = await getAdditionalInfo(userData.user_id, userData.data.access_token);
+      const additionalInfo = await getAdditionalInfo(
+        userData.user_id,
+        userData.data.access_token,
+      );
 
       dispatch(
         signIn({
           id: userData.user_id,
-          firstname : additionalInfo.data.name,
+          firstname: additionalInfo.data.name,
           lastname: '',
           authToken: userData.data.access_token,
           refreshToken: userData.data.refresh_token,
@@ -98,20 +105,19 @@ const SignIn = () => {
   };
 
   return (
-    <KeyboardAvoidingView style={screenSize === 'base' ? styles.miniOuterContainer : styles.outerContainer}>
+    <KeyboardAvoidingView
+      style={
+        screenSize === 'base'
+          ? styles.miniOuterContainer
+          : styles.outerContainer
+      }>
       <SafeAreaView
         style={
-          screenSize === 'base' ? {
-            paddingHorizontal: spacingBase + 5,
-            height: '100%',
-          } : {
-            justifyContent: 'center',
-            paddingHorizontal: spacingBase + 5,
-            display: 'flex',
-            flex: 1,
-          }
+          screenSize === 'base' ? styles.baseWrapper : styles.nBaseWrapper
         }>
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss} style={{backgroundColor: 'yellow'}}>
+        <TouchableWithoutFeedback
+          onPress={Keyboard.dismiss}
+          style={styles.bgYellow}>
           <View style={screenSize === 'base' ? styles.miniCard : styles.card}>
             <Formik
               initialValues={{email: '', password: ''}}
@@ -147,8 +153,8 @@ const SignIn = () => {
                       label="Login"
                       smallOutline={false}
                       isLoading={false}
-                      onPress={() => formikProps.handleSubmit()}>
-                    </UButton>
+                      onPress={() => formikProps.handleSubmit()}
+                    />
                   </View>
                 </>
               )}
@@ -189,6 +195,19 @@ const styles = StyleSheet.create({
   errorMessage: {
     marginBottom: spacingBase * 2,
     color: 'red',
+  },
+  baseWrapper: {
+    paddingHorizontal: spacingBase + 5,
+    height: '100%',
+  },
+  nBaseWrapper: {
+    justifyContent: 'center',
+    paddingHorizontal: spacingBase + 5,
+    display: 'flex',
+    flex: 1,
+  },
+  bgYellow: {
+    backgroundColor: 'yellow',
   },
 });
 

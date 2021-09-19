@@ -1,55 +1,61 @@
 import * as React from 'react';
-import {Text, View, StyleSheet, TouchableWithoutFeedback} from 'react-native';
-import {FormikProps, FormikValues} from 'formik';
+import {Text, View, StyleSheet} from 'react-native';
 import {Input} from 'native-base';
-import {primary, spacingBase, primaryLight, red, redLight, grey} from '../styles';
+import {
+  primary,
+  spacingBase,
+  primaryLight,
+  red,
+  redLight,
+  grey,
+} from '../styles';
 interface IProps {
   value: string;
   autoFocus?: boolean | undefined;
   styles?: object;
   type?: string;
   rightEl?: string;
+  requiredChecking?: boolean;
   onChange: (event: any) => void;
 }
 
 export const UInput: React.FC<IProps> = React.memo(
-  ({value, autoFocus, onChange, type, rightEl}) => {
+  ({value, autoFocus, onChange, type, rightEl, requiredChecking}) => {
     const [isActive, setIsActive] = React.useState(false);
-    const [isToggle, setIsToggle] = React.useState(false);
-
-    const onTogglePswd = () => {
-      setIsToggle(!isToggle);
-    };
-
     return (
-      <View style={style.wrapper}>
-        <View style={[
-          style.input,
-          isActive 
-            ? style.inputFocus
-            : style.inputNormal,
-          ]
-        }>
-          <Input
-            keyboardType={type === 'numeric' ? 'numeric' : 'default'}
-            value={value}
-            variant="unstyled"
-            onFocus={() => setIsActive(true)}
-            onChangeText={(text) => onChange(text)}
-            autoFocus={autoFocus}
-            onBlur={() => {
-              setIsActive(false);
-            }}
-            InputRightElement={
-              rightEl !== ''
-              ? (<Text style={style.rightElement}>
-                {rightEl}
-              </Text>)
-              : <></>
-            }
-          />
+      <>
+        <View style={style.wrapper}>
+          <View
+            style={[
+              style.input,
+              isActive ? style.inputFocus : style.inputNormal,
+            ]}>
+            <Input
+              keyboardType={type === 'numeric' ? 'numeric' : 'default'}
+              value={value}
+              variant="unstyled"
+              onFocus={() => setIsActive(true)}
+              onChangeText={(text) => onChange(text)}
+              autoFocus={autoFocus}
+              onBlur={() => {
+                setIsActive(false);
+              }}
+              InputRightElement={
+                rightEl !== '' ? (
+                  <Text style={style.rightElement}> {rightEl} </Text>
+                ) : (
+                  <></>
+                )
+              }
+            />
+          </View>
         </View>
-      </View>
+        {requiredChecking && value === '' && (
+          <Text style={{fontSize: 12, color: 'red'}}>
+            This field is required
+          </Text>
+        )}
+      </>
     );
   },
 );

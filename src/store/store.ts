@@ -16,7 +16,7 @@ const middlewares = [thunk];
 export const store = createStore(
   persistedReducer,
   undefined,
-  applyMiddleware(...middlewares)
+  applyMiddleware(...middlewares),
 );
 
 export const persistor = persistStore(store);

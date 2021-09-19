@@ -21,7 +21,7 @@ export const getAllFarms = (): ThunkActionType => {
         {},
         'GET',
       );
-      if ( farmData.length > 0 ) {
+      if (farmData.length > 0) {
         await dispatch(setFarms(farmData));
       }
 
@@ -48,7 +48,7 @@ export const getAllUtils = (): ThunkActionType => {
         {},
         'GET',
       );
-      if ( utilData.length > 0 ) {
+      if (utilData.length > 0) {
         await dispatch(setUtils(utilData));
       }
 

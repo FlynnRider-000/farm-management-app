@@ -68,7 +68,7 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
   const [datePickerShow, setDatePickerShow] = React.useState(false);
   const [formState, setFormState] = React.useState<IAssessmentForm>(defaultAssessment);
   const [newSeedingRequired, setNewSeedingRequired] = React.useState(false);
-  const [error, showError] = React.useState(false);
+  const [errorHandling, showErrorHandling] = React.useState(false);
 
   React.useEffect(() => {
     const edForm = editForm as IAssessmentForm;
@@ -87,11 +87,10 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
 
         const curLine = lines.filter((line: any) => line.id === edForm.line_id);
         if (curLine[0].last_assess) {
-          setPrevAssess(curLine[0].last_assess);
+          setPrevAssess(curLine[0].last_assess as IAssessmentForm);
           setNewSeedingRequired(false);
         } else {
-          const seedExist = pendingSeedings.filter(seed => seed.line_id === edForm.line_id)
-          if (seedExist.length) {
+          if (curLine[0].status !== 'empty') {
             setNewSeedingRequired(false);
           } else {
             setNewSeedingRequired(true);
@@ -124,10 +123,10 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
 
   const handleFormSubmit = async () => {
     if (inactiveButton) {
-      showError(true);
+      showErrorHandling(true);
       return;
     }
-    showError(false);
+    showErrorHandling(false);
     const form = {
       ...formState,
       type: 'assessment',
@@ -176,11 +175,10 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
             let harvest_id = curLine ? curLine[0].harvest_id : '0';
             setPrevAssess(defaultAssessment);
             if (curLine[0].last_assess) {
-              setPrevAssess(curLine[0].last_assess);
+              setPrevAssess(curLine[0].last_assess as IAssessmentForm);
               setNewSeedingRequired(false);
             } else {
-              const seedExist = pendingSeedings.filter(seed => seed.line_id === value)
-              if (seedExist.length) {
+              if (curLine[0].status !== 'empty') {
                 setNewSeedingRequired(false);
                 harvest_id = '-1';
               } else {
@@ -255,7 +253,7 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
           minWidth: 500
         }
     ]}>
-      {newSeedingRequired && <View style={{
+      {newSeedingRequired && editForm === null && <View style={{
         marginBottom: spacingBase * 4,
       }}>
         <Text style={{color: 'orange'}}>
@@ -270,6 +268,7 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
           <Text style={styles.inputStyleSmall}>Select Farm *</Text>
           <View style={styles.pickerStylesContainer}>
             <Select
+              isDisabled={editForm !== null}
               style={styles.pickerStyles}
               selectedValue={formState.farm_id}
               onValueChange={(label) => handleTextChange('farm_id')(label)}
@@ -297,7 +296,7 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
               {`Last Assessment Date: ${prevAssess.date_assessment ? moment.unix(Number(prevAssess.date_assessment)).format("YYYY/MM/DD") : ''}`}
             </Text>
           </View>}
-          {(formState.farm_id === '' && error) && <Text style={{fontSize: 12, color: 'red'}}>
+          {(formState.farm_id === '' && errorHandling) && <Text style={{fontSize: 12, color: 'red'}}>
             This field is required
           </Text>}
         </View>
@@ -308,6 +307,7 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
           <Text style={styles.inputStyleSmall}>Select Line *</Text>
           <View style={styles.pickerStylesContainer}>
             <Select
+              isDisabled={editForm !== null}
               style={styles.pickerStyles}
               selectedValue={formState.line_id}
               onValueChange={(label) => handleTextChange('line_id')(label)}
@@ -318,11 +318,11 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
                   ({line_name, id, harvest_id}, i: number) => {
                     let lineName = '';
                     if (harvest_id) {
-                      lineName = line_name;// ( Assessment not available )
+                      lineName = line_name;
                     } else {
                       const seedExist = pendingSeedings.filter(seed => seed.line_id === id);
                       if (seedExist.length) {
-                        lineName = line_name;// ( Assessment not available )
+                        lineName = line_name;
                       } else {
                         lineName = line_name + ' ( Assessment not available ) ';
                       }
@@ -340,7 +340,7 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
               }
             </Select>
           </View>
-          {(formState.line_id === '' && error) && <Text style={{fontSize: 12, color: 'red'}}>
+          {(formState.line_id === '' && errorHandling) && <Text style={{fontSize: 12, color: 'red'}}>
             This field is required
           </Text>}
         </View>
@@ -360,13 +360,11 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
             <UInput
               type="numeric"
               value={formState.condition_min}
+              requiredChecking={errorHandling}
               onChange={(text) =>
                 handleTextChange('condition_min')(text)
               }
             />
-            {(formState.condition_min === '' && error) && <Text style={{fontSize: 12, color: 'red'}}>
-              This field is required
-            </Text>}
           </Box>
         </View>
         <View style={[
@@ -383,13 +381,11 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
             <UInput
               type="numeric"
               value={formState.condition_max}
+              requiredChecking={errorHandling}
               onChange={(text) =>
                 handleTextChange('condition_max')(text)
               }
             />
-            {(formState.condition_max === '' && error) && <Text style={{fontSize: 12, color: 'red'}}>
-              This field is required
-            </Text>}
           </Box>
         </View>
         <View style={[
@@ -406,13 +402,11 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
             <UInput
               type="numeric"
               value={formState.condition_avg}
+              requiredChecking={errorHandling}
               onChange={(text) =>
                 handleTextChange('condition_avg')(text)
               }
             />
-            {(formState.condition_avg === '' && error) && <Text style={{fontSize: 12, color: 'red'}}>
-              This field is required
-            </Text>}
           </Box>
         </View>
       </View>
@@ -431,14 +425,12 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
             <UInput
               type="numeric"
               value={formState.condition_score}
+              requiredChecking={errorHandling}
               rightEl='%'
               onChange={(text) =>
                 handleTextChange('condition_score')(text)
               }
             />
-            {(formState.condition_score === '' && error) && <Text style={{fontSize: 12, color: 'red'}}>
-              This field is required
-            </Text>}
           </Box>
         </View>
         <View style={[
@@ -474,9 +466,9 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
               }
             </Select>
           </View>
-          {(formState.color === '' && error) && <Text style={{fontSize: 12, color: 'red'}}>
-              This field is required
-            </Text>}
+          {(formState.color === '' && errorHandling) && <Text style={{fontSize: 12, color: 'red'}}>
+            This field is required
+          </Text>}
         </View>
       </View>
       <View style={screenSize === 'base' ? {} : styles.inlineWrap}>
@@ -494,14 +486,12 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
             <UInput
               type="numeric"
               value={formState.blues}
+              requiredChecking={errorHandling}
               onChange={(text) =>
                 handleTextChange('blues')(text)
               }
             />
           </Box>
-          {(formState.blues === '' && error) && <Text style={{fontSize: 12, color: 'red'}}>
-              This field is required
-            </Text>}
         </View>
         <View style={[
           styles.inputStyleBig,
@@ -517,13 +507,11 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
             <UInput
               type="numeric"
               value={formState.tones}
+              requiredChecking={errorHandling}
               onChange={(text) =>
                 handleTextChange('tones')(text)
               }
             />
-            {(formState.tones === '' && error) && <Text style={{fontSize: 12, color: 'red'}}>
-              This field is required
-            </Text>}
           </Box>
         </View>
       </View>
@@ -547,25 +535,25 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
             </TouchableWithoutFeedback>
           </View>
         </View>
-        <TouchableWithoutFeedback onPress={() => {
-          setDateType('pharvest');
-          setDatePickerShow(true);
-        }}>
-          <View style={[
-            styles.inputStyleBig,
-            screenSize === 'base' ? {} : {width: '49%'}
-          ]}>
-            <View>
-              <Text style={styles.inputStyleSmall}>
-                Planned Harvest Date
-                <Text style={[styles.inputStyleSmall, styles.blueFont]}>
+        <View style={[
+          styles.inputStyleBig,
+          screenSize === 'base' ? {} : {width: '49%'}
+        ]}>
+          <View>
+            <Text style={styles.inputStyleSmall}>
+              Planned Harvest Date
+              <Text style={[styles.inputStyleSmall, styles.blueFont]}>
                 {` ${prevAssess.planned_date_harvest ? moment.unix(Number(prevAssess.planned_date_harvest)).format("YYYY/MM/DD") : ''}`}
               </Text>
-              </Text>
+            </Text>
+            <TouchableWithoutFeedback onPress={() => {
+              setDateType('pharvest');
+              setDatePickerShow(true);
+            }}>
               <Text style={styles.dateText}>{pHarvestDate.toDateString()}</Text>
-            </View>
+            </TouchableWithoutFeedback>
           </View>
-        </TouchableWithoutFeedback>
+        </View>
       </View>
       <View style={styles.inputStyleBig}>
         <View>
@@ -592,7 +580,7 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
       </View>
       <UButton
         onPress={() => handleFormSubmit()}
-        disabled={newSeedingRequired}
+        disabled={newSeedingRequired && editForm === null}
         label={editForm ? 'Update' : 'Submit' }
         fullWidth
         isLoading={false}

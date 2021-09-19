@@ -1,6 +1,6 @@
 import {IFormTypes} from '../entities/general';
 
-export type TFormAction = 
+export type TFormAction =
   | TSaveFormAction
   | TCurrentAction
   | TUpdateFormAction
@@ -25,12 +25,12 @@ export type TSaveFormAction = {
 export type TUpdateFormAction = {
   type: string;
   payload: {
-    oldForm: IFormTypes,
-    newForm: IFormTypes,
+    oldForm: IFormTypes;
+    newForm: IFormTypes;
   };
 };
 
 export type TEditFormAction = {
   type: string;
   payload: IFormTypes | null;
-}
+};

@@ -7,7 +7,7 @@ import {UIStateInterface} from '../entities/ui.entities';
 
 export const AppWrapper: React.FC = ({children}) => {
   const dispatch = useDispatch();
-  const {internetConnection, errors}: UIStateInterface = useSelector(
+  const {errors}: UIStateInterface = useSelector(
     (state: RootState) => state.ui,
   );
 
@@ -18,7 +18,7 @@ export const AppWrapper: React.FC = ({children}) => {
     return () => {
       unsubscribe();
     };
-  }, []);
+  }, [dispatch]);
 
   React.useEffect(() => {
     let removeErrorTimeout: NodeJS.Timeout;

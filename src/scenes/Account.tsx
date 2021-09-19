@@ -7,7 +7,7 @@ const Account: React.FC = React.memo(() => {
   const dispatch = useDispatch();
   React.useLayoutEffect(() => {
     dispatch(clearAllData());
-  }, []);
+  }, [dispatch]);
   return <SafeAreaView />;
 });
 

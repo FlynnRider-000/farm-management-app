@@ -13,23 +13,26 @@ interface IProps {
 }
 
 export const UButton: React.FC<IProps> = React.memo(
-  ({label, fullWidth, disabled, onPress, smallOutline, isLoading=false}) => {
-    const [isActive, setIsActive] = React.useState(false);
-
+  ({label, fullWidth, disabled, onPress, smallOutline, isLoading = false}) => {
     return (
       <Button
-        shadow={ smallOutline ? 0 : 7}
+        shadow={smallOutline ? 0 : 7}
         onPress={onPress}
         disabled={disabled}
-        size={ smallOutline ? "sm" : "md"}
+        size={smallOutline ? 'sm' : 'md'}
         style={[
           smallOutline ? style.smallButton : style.button,
-          fullWidth ? style.fullWidth: {},
+          fullWidth ? style.fullWidth : {},
           disabled ? style.disabled : {},
-        ]}
-      >
+        ]}>
         <Text style={smallOutline ? {color: primary} : {color: 'white'}}>
-          {isLoading && <Spinner style={{margin: 0, padding: 0}} size="sm" color="blue.500" />}
+          {isLoading && (
+            <Spinner
+              style={{margin: 0, padding: 0}}
+              size="sm"
+              color="blue.500"
+            />
+          )}
           {label}
         </Text>
       </Button>
@@ -53,7 +56,7 @@ const style = StyleSheet.create({
     borderRadius: spacingBase * 1.5,
     height: spacingBase * 5.5,
     shadowColor: primary,
-    shadowOffset: { width: 0, height: 5 },
+    shadowOffset: {width: 0, height: 5},
     shadowOpacity: 0.34,
     shadowRadius: 1,
     elevation: 10,
@@ -71,5 +74,5 @@ const style = StyleSheet.create({
     borderRadius: spacingBase * 1.5,
     textAlign: 'center',
     color: primary,
-  }
-});  
+  },
+});

@@ -8,7 +8,7 @@ import Main from '../scenes/Main';
 import Account from '../scenes/Account';
 import {useSelector} from 'react-redux';
 import {RootState} from '../store/rootReducer';
-import {MainScreenNavigationProp, IFarm} from '../entities/general';
+import {MainScreenNavigationProp} from '../entities/general';
 
 export type MainStackParamList = {
   Home: undefined;
@@ -33,7 +33,11 @@ const Drawer = createDrawerNavigator<MainStackParamList>();
 
 const AuthStackScreen = () => (
   <AuthStack.Navigator>
-    <AuthStack.Screen options={{headerShown: false}} name={'SignIn'} component={SignIn} />
+    <AuthStack.Screen
+      options={{headerShown: false}}
+      name={'SignIn'}
+      component={SignIn}
+    />
   </AuthStack.Navigator>
 );
 
@@ -41,11 +45,19 @@ type IProps = {
   navigation: MainScreenNavigationProp;
 };
 
-const MainStackScreen: React.FC<IProps> = ({navigation}) => {
+const MainStackScreen: React.FC<IProps> = () => {
   return (
     <MainStack.Navigator>
-      <MainStack.Screen options={{headerShown: false}} name={'Main'} component={Main} />
-      <MainStack.Screen options={{headerShown: false}} name={'Report'} component={Report} />
+      <MainStack.Screen
+        options={{headerShown: false}}
+        name={'Main'}
+        component={Main}
+      />
+      <MainStack.Screen
+        options={{headerShown: false}}
+        name={'Report'}
+        component={Report}
+      />
     </MainStack.Navigator>
   );
 };

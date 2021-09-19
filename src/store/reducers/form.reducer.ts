@@ -18,9 +18,9 @@ export const formReducer = (
       const id = state.pendingForms.indexOf(action.payload.oldForm);
       return <FormStateType>{
         ...state,
-        pendingForms: state.pendingForms.map((form, index) => (
-          index===id ? action.payload.newForm : form
-        )),
+        pendingForms: state.pendingForms.map((form, index) =>
+          index === id ? action.payload.newForm : form,
+        ),
       };
     case FORM_TYPES.SET_EDIT_FORM:
       return <FormStateType>{
@@ -35,7 +35,10 @@ export const formReducer = (
     case FORM_TYPES.SET_FORM_SENT:
       return <FormStateType>{
         ...state,
-        pendingForms: changeFormStatus(state.pendingForms, action.payload as IFormTypes),
+        pendingForms: changeFormStatus(
+          state.pendingForms,
+          action.payload as IFormTypes,
+        ),
       };
     case FORM_TYPES.SET_CURRENT_FORM:
       return <FormStateType>{

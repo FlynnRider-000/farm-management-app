@@ -42,12 +42,15 @@ export const loginUser = (user: TAuthUser): ThunkActionType => {
         currentUser,
       );
 
-      const additionalInfo = await getAdditionalInfo(userData.user_id, userData.data.access_token);
+      const additionalInfo = await getAdditionalInfo(
+        userData.user_id,
+        userData.data.access_token,
+      );
 
       dispatch(
         signIn({
           id: userData.user_id,
-          firstname : additionalInfo.data.name,
+          firstname: additionalInfo.data.name,
           lastname: '',
           authToken: userData.data.access_token,
           refreshToken: userData.data.refresh_token,
@@ -81,7 +84,9 @@ export const getRefreshToken = (): ThunkActionType => {
         {},
       );
       if (userData.status === 'Success') {
-        await dispatch(refreshToken(userData.data.access_token, userData.data.refresh_token));
+        await dispatch(
+          refreshToken(userData.data.access_token, userData.data.refresh_token),
+        );
       } else {
         await dispatch(signOut());
       }

@@ -1,32 +1,36 @@
 import * as React from 'react';
 import {View, StyleSheet} from 'react-native';
 import {TextArea} from 'native-base';
-import {primary, spacingBase, primaryLight, red, redLight, grey} from '../styles';
+import {
+  primary,
+  spacingBase,
+  primaryLight,
+  red,
+  redLight,
+  grey,
+} from '../styles';
 interface IProps {
   value: string;
   height: number;
   autoFocus?: boolean | undefined;
   styles?: object;
-  type?: string;
   onChange: (event: any) => void;
 }
 
 export const CustomTextArea: React.FC<IProps> = React.memo(
-  ({value, autoFocus, onChange, type, height}) => {
+  ({value, autoFocus, onChange, height}) => {
     const [isActive, setIsActive] = React.useState(false);
 
     return (
       <View style={style.wrapper}>
-        <View style={[
-          style.input,
-          isActive 
-            ? style.inputFocus
-            : style.inputNormal,
-          ]
-        }>
+        <View
+          style={[
+            style.input,
+            isActive ? style.inputFocus : style.inputNormal,
+          ]}>
           <TextArea
             style={{
-              height: height
+              height: height,
             }}
             textAlignVertical="top"
             variant="unstyled"
@@ -37,9 +41,7 @@ export const CustomTextArea: React.FC<IProps> = React.memo(
             onBlur={() => {
               setIsActive(false);
             }}
-            onChangeText={(text) =>
-              onChange(text)
-            }
+            onChangeText={(text) => onChange(text)}
           />
         </View>
       </View>

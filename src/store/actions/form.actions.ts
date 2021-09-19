@@ -2,7 +2,6 @@ import {FORM_TYPES} from '../types';
 import {IFormTypes} from '../../entities/general';
 import {TCurrentAction, TFormAction} from '../../entities/form.entities';
 
-
 export const saveFormToPending = (form: IFormTypes): TFormAction => ({
   type: FORM_TYPES.SAVE_PENDING,
   payload: form,
@@ -23,7 +22,10 @@ export const setEditForm = (form: IFormTypes | null): TFormAction => ({
   payload: form,
 });
 
-export const updateFormToPending = (oldForm: IFormTypes, newForm: IFormTypes): TFormAction => ({
+export const updateFormToPending = (
+  oldForm: IFormTypes,
+  newForm: IFormTypes,
+): TFormAction => ({
   type: FORM_TYPES.UPDATE_FORM,
   payload: {oldForm, newForm},
 });
