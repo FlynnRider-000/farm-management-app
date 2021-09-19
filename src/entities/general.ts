@@ -17,7 +17,8 @@ export interface ILine {
   id: string;
   line_name: string;
   harvest_id: string;
-  last_assess: IAssessmentForm;
+  last_assess: IAssessmentForm | string;
+  status: string;
 }
 export interface IFarm {
   id: string;
@@ -77,7 +78,8 @@ export interface IHarvestForm {
   delivered_to: string;
   packhouse: string;
   start_time: string;
-  finish_time: string;
+  finish_time: string
+  budgeted_harvest_income_actual: string;
   date: string;
   bags_clean: boolean;
   area_open_for_harvest: boolean;
@@ -100,4 +102,4 @@ export interface IHarvestForm {
   comments: string;
 }
 
-export type IFormTypes = IAssessmentForm | ISeedingForm;
+export type IFormTypes = IAssessmentForm | ISeedingForm | IHarvestForm;

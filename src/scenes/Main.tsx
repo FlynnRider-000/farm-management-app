@@ -23,6 +23,7 @@ import {
   IFormTypes,
   IAssessmentForm,
   ISeedingForm,
+  IHarvestForm,
 } from '../entities/general';
 type IProps = {
   navigation: MainScreenNavigationProp;
@@ -61,6 +62,9 @@ const Main: React.FC<IProps> = React.memo(({navigation}) => {
   );
   const pendingSeedings = pendingForms.filter(
     (form) => form.type === 'seeding',
+  );
+  const pendingHarvests = pendingForms.filter(
+    (form) => form.type === 'harvest',
   );
 
   const getAllData = async () => {
@@ -426,6 +430,91 @@ const Main: React.FC<IProps> = React.memo(({navigation}) => {
                           </View>
                           <View style={styles.flexChild}>
                             <Text>{util[0].name}</Text>
+                          </View>
+                        </>
+                      )}
+                      <View
+                        style={[styles.flexChild, {alignItems: 'flex-end'}]}>
+                        <UButton
+                          onPress={() => onEditForm(form)}
+                          disabled={formSending ? true : false}
+                          label="Edit"
+                          isLoading={false}
+                          fullWidth={false}
+                          smallOutline={true}
+                        />
+                      </View>
+                    </View>
+                  );
+                })}
+              </>
+            ) : (
+              <></>
+            )}
+            {pendingHarvests.length ? (
+              <>
+                <View
+                  style={{
+                    marginBottom: spacingBase * 1.2,
+                    justifyContent: 'space-between',
+                  }}>
+                  <View
+                    style={[
+                      styles.tableRow,
+                      {
+                        marginBottom: spacingBase * 1.2,
+                        justifyContent: 'space-between',
+                      },
+                    ]}>
+                    <Heading size="md"> Harvest Forms </Heading>
+                  </View>
+                </View>
+                <View style={styles.tableRow}>
+                  <View style={styles.flexChild}>
+                    <Text>Farm</Text>
+                  </View>
+                  <View style={styles.flexChild}>
+                    <Text>Line</Text>
+                  </View>
+                  <View style={styles.flexChild}>
+                    <Text>Harvest Date</Text>
+                  </View>
+                  {screenSize !== 'base' && (
+                    <>
+                      <View style={styles.flexChild}>
+                        <Text>Harvest No</Text>
+                      </View>
+                      <View style={styles.flexChild}>
+                        <Text>Number of Bags</Text>
+                      </View>
+                    </>
+                  )}
+                  <View style={styles.flexChild} />
+                </View>
+                {pendingHarvests.map((frm, index) => {
+                  const form = frm as IHarvestForm;
+                  return (
+                    <View style={styles.tableRow} key={`form${index}`}>
+                      <View style={styles.flexChild}>
+                        <Text>{getFarmName(form.farm_id)}</Text>
+                      </View>
+                      <View style={styles.flexChild}>
+                        <Text>{getLineName(form.farm_id, form.line_id)}</Text>
+                      </View>
+                      <View style={styles.flexChild}>
+                        <Text>
+                          {moment
+                            .unix(Number(form.date))
+                            .format('YYYY/MM/DD')}
+                        </Text>
+                      </View>
+                      {screenSize !== 'base' && (
+                        <>
+                          <View style={styles.flexChild}>
+                            <Text>{form.harvest_number}</Text>
+                          </View>
+                          <View style={styles.flexChild}>
+                            <Text>{form.number_of_bags}</Text>
                           </View>
                         </>
                       )}

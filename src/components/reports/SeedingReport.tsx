@@ -98,7 +98,7 @@ export const SeedingReport: React.FC<TProps> = ({navigation}) => {
         );
       }
     }
-  }, [editForm, farmData, utilData]);
+  }, [editForm]);
 
   React.useEffect(() => {
     if (
@@ -180,17 +180,10 @@ export const SeedingReport: React.FC<TProps> = ({navigation}) => {
 
           if (type === 'line_id') {
             const curLine = lineData.filter((line: any) => line.id === value);
-            if (curLine[0].harvest_id) {
+            if (curLine[0].status === 'seeded') {
               setSeedExist(true);
             } else {
               setSeedExist(false);
-            }
-
-            const form = pendingForms.filter(
-              (el) => el.type === 'seeding' && el.line_id === value,
-            );
-            if (form.length) {
-              setSeedExist(true);
             }
 
             return {
@@ -233,7 +226,7 @@ export const SeedingReport: React.FC<TProps> = ({navigation}) => {
               minWidth: 500,
             },
       ]}>
-      {seedExist && (
+      {seedExist && editForm === null && (
         <View
           style={{
             marginBottom: spacingBase * 4,
@@ -509,7 +502,7 @@ export const SeedingReport: React.FC<TProps> = ({navigation}) => {
       </View>
       <UButton
         onPress={() => handleFormSubmit()}
-        disabled={seedExist}
+        disabled={seedExist && editForm === null}
         label={editForm ? 'Update' : 'Submit'}
         fullWidth
         isLoading={false}

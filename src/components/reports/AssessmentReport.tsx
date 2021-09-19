@@ -87,11 +87,10 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
 
         const curLine = lines.filter((line: any) => line.id === edForm.line_id);
         if (curLine[0].last_assess) {
-          setPrevAssess(curLine[0].last_assess);
+          setPrevAssess(curLine[0].last_assess as IAssessmentForm);
           setNewSeedingRequired(false);
         } else {
-          const seedExist = pendingSeedings.filter(seed => seed.line_id === edForm.line_id)
-          if (seedExist.length) {
+          if (curLine[0].status !== 'empty') {
             setNewSeedingRequired(false);
           } else {
             setNewSeedingRequired(true);
@@ -176,11 +175,10 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
             let harvest_id = curLine ? curLine[0].harvest_id : '0';
             setPrevAssess(defaultAssessment);
             if (curLine[0].last_assess) {
-              setPrevAssess(curLine[0].last_assess);
+              setPrevAssess(curLine[0].last_assess as IAssessmentForm);
               setNewSeedingRequired(false);
             } else {
-              const seedExist = pendingSeedings.filter(seed => seed.line_id === value)
-              if (seedExist.length) {
+              if (curLine[0].status !== 'empty') {
                 setNewSeedingRequired(false);
                 harvest_id = '-1';
               } else {
@@ -255,7 +253,7 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
           minWidth: 500
         }
     ]}>
-      {newSeedingRequired && <View style={{
+      {newSeedingRequired && editForm === null && <View style={{
         marginBottom: spacingBase * 4,
       }}>
         <Text style={{color: 'orange'}}>
@@ -270,6 +268,7 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
           <Text style={styles.inputStyleSmall}>Select Farm *</Text>
           <View style={styles.pickerStylesContainer}>
             <Select
+              isDisabled={editForm !== null}
               style={styles.pickerStyles}
               selectedValue={formState.farm_id}
               onValueChange={(label) => handleTextChange('farm_id')(label)}
@@ -308,6 +307,7 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
           <Text style={styles.inputStyleSmall}>Select Line *</Text>
           <View style={styles.pickerStylesContainer}>
             <Select
+              isDisabled={editForm !== null}
               style={styles.pickerStyles}
               selectedValue={formState.line_id}
               onValueChange={(label) => handleTextChange('line_id')(label)}
@@ -580,7 +580,7 @@ export const AssessmentReport: React.FC<TProps> = ({navigation}) => {
       </View>
       <UButton
         onPress={() => handleFormSubmit()}
-        disabled={newSeedingRequired}
+        disabled={newSeedingRequired && editForm === null}
         label={editForm ? 'Update' : 'Submit' }
         fullWidth
         isLoading={false}
