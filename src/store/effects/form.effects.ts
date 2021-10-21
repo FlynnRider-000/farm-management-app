@@ -1,7 +1,7 @@
 import * as RNFS from 'react-native-fs';
 import {RootState} from '../rootReducer';
 import {getFormUrl} from '../../helpers/form.helpers';
-import {postRequest} from '../../helpers/general.gelpers';
+import {postRequestMultiPart} from '../../helpers/general.gelpers';
 import {
   ThunkActionType,
   IFormTypes,
@@ -30,38 +30,51 @@ const sendForm = (
     const state: RootState = getState();
     const {user} = state;
 
+    let frmData = new FormData();
+
     let formData: Array<IFormTypes> = [];
     for (let i = 0; i < form.length; i++) {
       if (form[i].type === 'harvest') {
         const fr = form[i] as IHarvestForm;
-        const sig = await RNFS.readFile(`${RNFS.DocumentDirectoryPath}/${fr.signature}.jpg`, 'utf8');
-        formData.push({
-          ...form[i],
-          signature: sig,
+        frmData.append('file[]', {
+          // @ts-ignore
+          name: fr.signature,
+          type: 'image/png',
+          uri: 'file://' + RNFS.ExternalDirectoryPath + '/' + fr.signature,
         });
       } else {
-        formData.push(form[i]);
+        if (form[i].type === 'assessment') {
+          let tmp = form[i] as IAssessmentForm;
+          for (let j = 0; j < tmp.images.length; j++) {
+            frmData.append('file[]', {
+              // @ts-ignore
+              name: tmp.images[j],
+              type: 'image/png',
+              uri: 'file://' + RNFS.ExternalDirectoryPath + '/' + tmp.images[j],
+            });
+          }
+        }
       }
+      formData.push(form[i]);
     }
 
+    frmData.append('email', emailNotify ? 'true' : 'false');
+    frmData.append('data', JSON.stringify(formData));
+
     try {
-      const sendFormRes = await postRequest(
+      const sendFormRes = await postRequestMultiPart(
         getFormUrl(),
         {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
+          'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${user.currentUser?.authToken}`,
         },
-        {
-          data: formData,
-          email: emailNotify,
-        },
+        frmData,
       );
-      
-      console.log('**********');
-      console.log(formData);
-      console.log('----------');
-      console.log(sendFormRes);
+
+      // console.log('**********');
+      // console.log(formData);
+      // console.log('----------');
+      // console.log(sendFormRes);
       if (sendFormRes.status === 'Success') {
         for (let i = 0; i < form.length; i++) {
           await dispatch(removeFormFromPending(form[i]));

@@ -7,7 +7,7 @@ export interface IFarmTypes {
   CREATE_HARVEST: string;
   UPDATE_SEEDING: string;
   CREATE_SEEDING: string;
-};
+}
 
 export const FARM_TYPES: IFarmTypes = {
   SET_FARMS: 'SET_FARMS',

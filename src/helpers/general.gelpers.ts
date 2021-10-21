@@ -8,6 +8,36 @@ export const ID = (): string => {
   return '_' + Math.random().toString(36).substr(2, 9);
 };
 
+export const postRequestMultiPart = async (
+  url: string,
+  headers: THeaders,
+  data: FormData,
+  method: string = 'POST',
+) => {
+  try {
+    let response = null;
+    if (method === 'POST') {
+      response = await fetch(url, {
+        method,
+        headers,
+        body: data,
+      });
+      const res = await response.json();
+      return res;
+    } else if (method === 'GET') {
+      response = await fetch(url, {
+        method,
+        headers,
+      });
+      const res = await response.json();
+      return res;
+    }
+  } catch (e: any) {
+    console.log(e.message);
+    return;
+  }
+};
+
 export const postRequest = async (
   url: string,
   headers: THeaders,

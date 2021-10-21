@@ -60,10 +60,8 @@ export const SeedingReport: React.FC<TProps> = ({navigation}) => {
   const utilData: Array<IUtil> = useSelector(
     (state: RootState) => state.farm.allUtils,
   );
-  const {pendingForms} = useSelector((state: RootState) => state.form);
 
   const [lineData, setLineData] = React.useState<Array<ILine>>([]);
-
   const [seedTypes, setSeedTypes] = React.useState<Array<IUtil>>([]);
   const [dateType, setDateType] = React.useState('seed');
   const [seedDate, setSeedDate] = React.useState(new Date());
@@ -285,14 +283,8 @@ export const SeedingReport: React.FC<TProps> = ({navigation}) => {
               placeholder="Select Line">
               {
                 // @ts-ignore
-                lineData.map(({line_name, id, harvest_id}) => {
-                  return (
-                    <Select.Item
-                      label={line_name}
-                      value={id}
-                      key={id}
-                    />
-                  );
+                lineData.map(({line_name, id}) => {
+                  return <Select.Item label={line_name} value={id} key={id} />;
                 })
               }
             </Select>

@@ -44,6 +44,7 @@ export interface IAssessmentForm {
   line_id: string;
   planned_date_harvest: string;
   tones: string;
+  images: Array<String>;
 }
 
 export interface ISeedingForm {
@@ -78,7 +79,7 @@ export interface IHarvestForm {
   delivered_to: string;
   packhouse: string;
   start_time: string;
-  finish_time: string
+  finish_time: string;
   budgeted_harvest_income_actual: string;
   date: string;
   bags_clean: boolean;

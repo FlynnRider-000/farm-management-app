@@ -1,6 +1,6 @@
 import {FARM_TYPES} from '../types';
+import {IAssessmentForm} from '../../entities/general';
 import {FarmStateInterface} from '../../entities/farm.entities';
-import { IAssessmentForm } from '../../entities/general';
 
 const INITIAL_STATE: FarmStateInterface = {
   allFarms: [],
@@ -20,8 +20,7 @@ export const farmReducer = (state = INITIAL_STATE, action: any) => {
               if (farm.lines[i].last_assess) {
                 const la = farm.lines[i].last_assess as IAssessmentForm;
                 if (
-                  `${la.date_assessment}` <=
-                  `${action.payload.date_assessment}`
+                  `${la.date_assessment}` <= `${action.payload.date_assessment}`
                 ) {
                   newLine.last_assess = action.payload;
                 }

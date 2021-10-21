@@ -1,21 +1,30 @@
 import * as React from 'react';
-import {View, StyleSheet, TouchableWithoutFeedback, Platform, Modal, Image} from 'react-native';
-import {Text, Heading, Box, useBreakpointValue, Select} from 'native-base';
-import {useDispatch, useSelector} from 'react-redux';
-import {Checkbox} from 'react-native-ui-lib';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import Signature from "react-native-signature-canvas";
+import {
+  View,
+  StyleSheet,
+  TouchableWithoutFeedback,
+  Platform,
+  Modal,
+} from 'react-native';
+import {Text, Heading, Box, useBreakpointValue, Select, Image} from 'native-base';
 import * as RNFS from 'react-native-fs';
-import {primary, spacingBase} from '../../styles';
+import {Checkbox} from 'react-native-ui-lib';
+import {useDispatch, useSelector} from 'react-redux';
+import Signature from 'react-native-signature-canvas';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import {UButton} from '../UButton';
 import {UInput} from '../CustomInput';
 import {CustomTextArea} from '../CustomTextArea';
-import {validationForZeroMinus, toggleSecondMillisecond} from '../../helpers/form.helpers';
-import {IHarvestForm, ILine, IFarm, IUtil} from '../../entities/general';
+import {primary, spacingBase} from '../../styles';
 import {MainScreenNavigationProp} from '../../entities/general';
+import {IHarvestForm, ILine, IFarm} from '../../entities/general';
 import {RootState} from '../../store/rootReducer';
-import {saveForm, updateForm} from '../../store/effects/form.effects';
 import {setEditForm} from '../../store/actions/form.actions';
+import {saveForm, updateForm} from '../../store/effects/form.effects';
+import {
+  validationForZeroMinus,
+  toggleSecondMillisecond,
+} from '../../helpers/form.helpers';
 
 type TProps = {
   navigation: MainScreenNavigationProp;
@@ -23,7 +32,6 @@ type TProps = {
 
 export const HarvestReport: React.FC<TProps> = ({navigation}) => {
   const dispatch = useDispatch();
-  const ref = React.useRef();
 
   const screenSize = useBreakpointValue({
     base: 'base',
@@ -71,13 +79,15 @@ export const HarvestReport: React.FC<TProps> = ({navigation}) => {
     comments: '',
   };
 
-  const farmData: Array<IFarm> = useSelector((state: RootState) => state.farm.allFarms);
-  const {pendingForms} = useSelector((state: RootState) => state.form);
+  const farmData: Array<IFarm> = useSelector(
+    (state: RootState) => state.farm.allFarms,
+  );
   const {editForm} = useSelector((state: RootState) => state.form);
 
-  const [formState, setFormState] = React.useState<IHarvestForm>(defaultAssessment);
+  const [formState, setFormState] = React.useState<IHarvestForm>(
+    defaultAssessment,
+  );
   const [lineData, setLineData] = React.useState<Array<ILine>>([]);
-
   const [signImage, setSignImage] = React.useState('');
   const [errorHandling, showErrorHandling] = React.useState(false);
   const [inactiveButton, setInactiveButton] = React.useState(true);
@@ -89,11 +99,9 @@ export const HarvestReport: React.FC<TProps> = ({navigation}) => {
   const [finishDate, setFinishDate] = React.useState(new Date());
   const [seedExist, setSeedExist] = React.useState(false);
   const [signPanelVisible, setSignPanelVisible] = React.useState(false);
-
-  const loadSignature = async(fileName: string) => {
+  const loadSignature = (fileName: string) => {
     try {
-      const img = await RNFS.readFile(`${RNFS.DocumentDirectoryPath}/${fileName}.jpg`, 'utf8');
-      setSignImage(img);
+      setSignImage(`file://${RNFS.ExternalDirectoryPath}/${fileName}`);
     } catch (e) {
       console.log(e);
     }
@@ -155,6 +163,7 @@ export const HarvestReport: React.FC<TProps> = ({navigation}) => {
       showErrorHandling(true);
       return;
     }
+
     showErrorHandling(false);
     const form = {
       ...formState,
@@ -162,7 +171,7 @@ export const HarvestReport: React.FC<TProps> = ({navigation}) => {
       start_time: `${toggleSecondMillisecond(startDate.getTime())}`,
       finish_time: `${toggleSecondMillisecond(finishDate.getTime())}`,
       date: `${toggleSecondMillisecond(harvestDate.getTime())}`,
-    }
+    };
     if (editForm) {
       await dispatch(updateForm(editForm, form));
       await dispatch(setEditForm(null));
@@ -176,27 +185,27 @@ export const HarvestReport: React.FC<TProps> = ({navigation}) => {
     const type = name;
     return (text: string | boolean) => {
       //@ts-ignore
-      let value = isNaN(Number(text)) ? formState[`${name}`] : text;
       setFormState((prev: any) => {
         const isType: string | undefined = type;
 
         if (isType) {
           if (type === 'farm_id') {
-            const curFarm: Array<IFarm> = farmData.filter((farm: any) => farm.id === value);
-
+            const curFarm: Array<IFarm> = farmData.filter(
+              (farm: any) => farm.id === Number(text),
+            );
             if (curFarm) {
               setLineData(curFarm[0].lines ? curFarm[0].lines : []);
             }
             return {
               ...prev,
-              [isType]: value,
-              'account_id': curFarm ? curFarm[0].acc_id : 0,
-              'line_id': '',
+              [isType]: Number(text),
+              account_id: curFarm ? curFarm[0].acc_id : 0,
+              line_id: '',
             };
           }
 
           if (type === 'line_id') {
-            const curLine = lineData.filter((line: any) => line.id === value);
+            const curLine = lineData.filter((line: any) => line.id === Number(text));
             if (curLine[0].status === 'seeded') {
               setSeedExist(true);
             } else {
@@ -205,8 +214,8 @@ export const HarvestReport: React.FC<TProps> = ({navigation}) => {
 
             return {
               ...prev,
-              [isType]: value,
-              'harvest_group_id': curLine ? curLine[0].harvest_id : 0,
+              [isType]: Number(text),
+              harvest_group_id: curLine ? curLine[0].harvest_id : 0,
             };
           }
 
@@ -218,21 +227,20 @@ export const HarvestReport: React.FC<TProps> = ({navigation}) => {
             type === 'number_of_rope_bags' ||
             type === 'budgeted_harvest_income_actual'
           ) {
-            const validValue = validationForZeroMinus(value);
-            return { ...prev, [isType]: validValue };
+            const validValue = validationForZeroMinus(text.toString());
+            return {...prev, [isType]: validValue};
           }
 
           if (type === 'meat_yield' || type === 'blues') {
             return {
               ...prev,
-              [isType]: Number(value) > 100 ? '100' : `${Number(value)}`,
+              [isType]: Number(text) > 100 ? '100' : `${Number(text)}`,
             };
           }
 
-          value = text;
-          return { ...prev, [isType]: value };
+          return {...prev, [isType]: text};
         }
-        return { ...prev };
+        return {...prev};
       });
     };
   };
@@ -240,12 +248,16 @@ export const HarvestReport: React.FC<TProps> = ({navigation}) => {
   const handleSignDone = async (img: string) => {
     let sigFileName = formState.signature;
     if (sigFileName === '') {
-      sigFileName = `${new Date().getTime()}`;
+      sigFileName = `${formState.farm_id}-${formState.line_id}-${new Date().getTime()}.png`;
     }
     try {
       setSignPanelVisible(false);
-      await RNFS.writeFile(`${RNFS.DocumentDirectoryPath}/${sigFileName}.jpg`, img, 'utf8');
-      setSignImage(img);
+      await RNFS.writeFile(
+        `${RNFS.ExternalDirectoryPath}/${sigFileName}`,
+        img.replace('data:image/png;base64,', ''),
+        'base64',
+      );
+      setSignImage(`file://${RNFS.ExternalDirectoryPath}/${sigFileName}`);
       handleTextChange('signature')(sigFileName);
     } catch (e: any) {
       console.log(e.message);
@@ -254,16 +266,18 @@ export const HarvestReport: React.FC<TProps> = ({navigation}) => {
 
   return (
     <>
-      <View style={[
-        styles.outerContainer,
-        screenSize === 'base' 
-        ? {
-          width: 400
-        } : {
-          width: '70%',
-          minWidth: 500
-        }
-      ]}>
+      <View
+        style={[
+          styles.outerContainer,
+          screenSize === 'base'
+            ? {
+                width: 400,
+              }
+            : {
+                width: '70%',
+                minWidth: 500,
+              },
+        ]}>
         {formState.line_id !== '' && !seedExist && editForm === null && (
           <View
             style={{
@@ -281,9 +295,7 @@ export const HarvestReport: React.FC<TProps> = ({navigation}) => {
               type="text"
               value={formState.company}
               requiredChecking={errorHandling}
-              onChange={(text) =>
-                handleTextChange('company')(text)
-              }
+              onChange={(text) => handleTextChange('company')(text)}
             />
           </Box>
         </View>
@@ -294,9 +306,7 @@ export const HarvestReport: React.FC<TProps> = ({navigation}) => {
               type="text"
               value={formState.vessel}
               requiredChecking={errorHandling}
-              onChange={(text) =>
-                handleTextChange('vessel')(text)
-              }
+              onChange={(text) => handleTextChange('vessel')(text)}
             />
           </Box>
         </View>
@@ -307,23 +317,23 @@ export const HarvestReport: React.FC<TProps> = ({navigation}) => {
               type="numeric"
               value={formState.harvest_number}
               requiredChecking={errorHandling}
-              onChange={(text) =>
-                handleTextChange('harvest_number')(text)
-              }
+              onChange={(text) => handleTextChange('harvest_number')(text)}
             />
           </Box>
         </View>
       </View>
-      <View style={[
-        styles.outerContainer,
-        screenSize === 'base' 
-        ? {
-          width: 400
-        } : {
-          width: '70%',
-          minWidth: 500
-        }
-      ]}>
+      <View
+        style={[
+          styles.outerContainer,
+          screenSize === 'base'
+            ? {
+                width: 400,
+              }
+            : {
+                width: '70%',
+                minWidth: 500,
+              },
+        ]}>
         <Heading size="md" style={{flex: 1, paddingBottom: spacingBase * 4}}>
           I declare that the following was harvested
         </Heading>
@@ -334,9 +344,7 @@ export const HarvestReport: React.FC<TProps> = ({navigation}) => {
               type="numeric"
               value={formState.number_of_bags}
               requiredChecking={errorHandling}
-              onChange={(text) =>
-                handleTextChange('number_of_bags')(text)
-              }
+              onChange={(text) => handleTextChange('number_of_bags')(text)}
             />
           </Box>
         </View>
@@ -360,13 +368,11 @@ export const HarvestReport: React.FC<TProps> = ({navigation}) => {
               type="text"
               value={formState.tag_color}
               requiredChecking={errorHandling}
-              onChange={(text) =>
-                handleTextChange('tag_color')(text)
-              }
+              onChange={(text) => handleTextChange('tag_color')(text)}
             />
           </Box>
         </View>
-        <View style={styles.inputSpacing}></View>
+        <View style={styles.inputSpacing} />
         <View style={styles.inputStyleBig}>
           <Box>
             <Text style={styles.inputStyleSmall}>Port of Unload</Text>
@@ -374,9 +380,7 @@ export const HarvestReport: React.FC<TProps> = ({navigation}) => {
               type="text"
               value={formState.port_of_unload}
               requiredChecking={errorHandling}
-              onChange={(text) =>
-                handleTextChange('port_of_unload')(text)
-              }
+              onChange={(text) => handleTextChange('port_of_unload')(text)}
             />
           </Box>
         </View>
@@ -387,9 +391,7 @@ export const HarvestReport: React.FC<TProps> = ({navigation}) => {
               type="text"
               value={formState.crop_owner}
               requiredChecking={errorHandling}
-              onChange={(text) =>
-                handleTextChange('crop_owner')(text)
-              }
+              onChange={(text) => handleTextChange('crop_owner')(text)}
             />
           </Box>
         </View>
@@ -401,26 +403,24 @@ export const HarvestReport: React.FC<TProps> = ({navigation}) => {
               style={styles.pickerStyles}
               selectedValue={formState.farm_id}
               onValueChange={(label) => handleTextChange('farm_id')(label)}
-              placeholder='Select Farm'>
+              placeholder="Select Farm">
               {
                 // @ts-ignore
-                farmData.map(
-                  ({name, number, id}, i: number) => {
-                    return (
-                      <Select.Item
-                        label={`${name} ( ${number} )`}
-                        value={id}
-                        key={id}
-                      />
-                    );
-                  },
-                )
+                farmData.map(({name, number, id}) => (
+                  <Select.Item
+                    label={`${name} ( ${number} )`}
+                    value={id}
+                    key={id}
+                  />
+                ))
               }
             </Select>
           </View>
-          {(formState.farm_id === '' && errorHandling) && <Text style={{fontSize: 12, color: 'red'}}>
-            This field is required
-          </Text>}
+          {formState.farm_id === '' && errorHandling && (
+            <Text style={{fontSize: 12, color: 'red'}}>
+              This field is required
+            </Text>
+          )}
         </View>
         <View style={styles.inputStyleBig}>
           <Text style={styles.inputStyleSmall}>Line</Text>
@@ -430,26 +430,20 @@ export const HarvestReport: React.FC<TProps> = ({navigation}) => {
               style={styles.pickerStyles}
               selectedValue={formState.line_id}
               onValueChange={(label) => handleTextChange('line_id')(label)}
-              placeholder='Select Line'>
+              placeholder="Select Line">
               {
                 // @ts-ignore
-                lineData.map(
-                  ({line_name, id, harvest_id}, i: number) => {
-                    return (
-                      <Select.Item
-                        label={line_name}
-                        value={id}
-                        key={id}
-                      />
-                    );
-                  },
-                )
+                lineData.map(({line_name, id}) => (
+                  <Select.Item label={line_name} value={id} key={id} />
+                ))
               }
             </Select>
           </View>
-          {(formState.line_id === '' && errorHandling) && <Text style={{fontSize: 12, color: 'red'}}>
-            This field is required
-          </Text>}
+          {formState.line_id === '' && errorHandling && (
+            <Text style={{fontSize: 12, color: 'red'}}>
+              This field is required
+            </Text>
+          )}
         </View>
         <View style={styles.inputStyleBig}>
           <Box>
@@ -458,13 +452,11 @@ export const HarvestReport: React.FC<TProps> = ({navigation}) => {
               type="text"
               value={formState.growing_area}
               requiredChecking={errorHandling}
-              onChange={(text) =>
-                handleTextChange('growing_area')(text)
-              }
+              onChange={(text) => handleTextChange('growing_area')(text)}
             />
           </Box>
         </View>
-        <View style={styles.inputSpacing}></View>
+        <View style={styles.inputSpacing} />
         <View style={styles.inputStyleBig}>
           <Box>
             <Text style={styles.inputStyleSmall}>Delivered To</Text>
@@ -472,9 +464,7 @@ export const HarvestReport: React.FC<TProps> = ({navigation}) => {
               type="text"
               value={formState.delivered_to}
               requiredChecking={errorHandling}
-              onChange={(text) =>
-                handleTextChange('delivered_to')(text)
-              }
+              onChange={(text) => handleTextChange('delivered_to')(text)}
             />
           </Box>
         </View>
@@ -485,20 +475,19 @@ export const HarvestReport: React.FC<TProps> = ({navigation}) => {
               type="text"
               value={formState.packhouse}
               requiredChecking={errorHandling}
-              onChange={(text) =>
-                handleTextChange('packhouse')(text)
-              }
+              onChange={(text) => handleTextChange('packhouse')(text)}
             />
           </Box>
         </View>
-        <View style={styles.inputSpacing}></View>
+        <View style={styles.inputSpacing} />
         <View style={styles.inputStyleBig}>
           <View>
             <Text style={styles.inputStyleSmall}> Start Time </Text>
-            <TouchableWithoutFeedback onPress={() => {
-              setTimeType('start');
-              setTimePickerShow(true);
-            }}>
+            <TouchableWithoutFeedback
+              onPress={() => {
+                setTimeType('start');
+                setTimePickerShow(true);
+              }}>
               <Text style={styles.dateText}>
                 {`${startDate.getHours()} : ${startDate.getMinutes()}`}
               </Text>
@@ -508,10 +497,11 @@ export const HarvestReport: React.FC<TProps> = ({navigation}) => {
         <View style={styles.inputStyleBig}>
           <View>
             <Text style={styles.inputStyleSmall}> End Time </Text>
-            <TouchableWithoutFeedback onPress={() => {
-              setTimeType('end');
-              setTimePickerShow(true);
-            }}>
+            <TouchableWithoutFeedback
+              onPress={() => {
+                setTimeType('end');
+                setTimePickerShow(true);
+              }}>
               <Text style={styles.dateText}>
                 {`${finishDate.getHours()} : ${finishDate.getMinutes()}`}
               </Text>
@@ -520,27 +510,28 @@ export const HarvestReport: React.FC<TProps> = ({navigation}) => {
         </View>
         <View style={styles.inputStyleBig}>
           <View>
-            <Text style={styles.inputStyleSmall}>
-              Date
-            </Text>
-            <TouchableWithoutFeedback onPress={() => {
-              setDatePickerShow(true);
-            }}>
+            <Text style={styles.inputStyleSmall}>Date</Text>
+            <TouchableWithoutFeedback
+              onPress={() => {
+                setDatePickerShow(true);
+              }}>
               <Text style={styles.dateText}>{harvestDate.toDateString()}</Text>
             </TouchableWithoutFeedback>
           </View>
         </View>
       </View>
-      <View style={[
-        styles.outerContainer,
-        screenSize === 'base' 
-        ? {
-          width: 400
-        } : {
-          width: '70%',
-          minWidth: 500
-        }
-      ]}>
+      <View
+        style={[
+          styles.outerContainer,
+          screenSize === 'base'
+            ? {
+                width: 400,
+              }
+            : {
+                width: '70%',
+                minWidth: 500,
+              },
+        ]}>
         <Heading size="md" style={{flex: 1, paddingBottom: spacingBase * 4}}>
           Harvest Check List
         </Heading>
@@ -548,41 +539,47 @@ export const HarvestReport: React.FC<TProps> = ({navigation}) => {
           <Text style={styles.inputStyleSmall}>Company</Text>
           <Checkbox
             value={formState.bags_clean}
-            onValueChange={value => handleTextChange('bags_clean')(value)}
+            onValueChange={(value) => handleTextChange('bags_clean')(value)}
           />
         </Box>
         <Box style={styles.inlineContainer}>
           <Text style={styles.inputStyleSmall}>Area Open For Harvest</Text>
           <Checkbox
             value={formState.area_open_for_harvest}
-            onValueChange={value => handleTextChange('area_open_for_harvest')(value)}
+            onValueChange={(value) =>
+              handleTextChange('area_open_for_harvest')(value)
+            }
           />
         </Box>
         <Box style={styles.inlineContainer}>
           <Text style={styles.inputStyleSmall}>Trucks Booked</Text>
           <Checkbox
             value={formState.trucks_booked}
-            onValueChange={value => handleTextChange('trucks_booked')(value)}
+            onValueChange={(value) => handleTextChange('trucks_booked')(value)}
           />
         </Box>
         <Box style={styles.inlineContainer}>
           <Text style={styles.inputStyleSmall}>More Clean Bags On Truck</Text>
           <Checkbox
             value={formState.more_clean_bags_on_truck}
-            onValueChange={value => handleTextChange('more_clean_bags_on_truck')(value)}
+            onValueChange={(value) =>
+              handleTextChange('more_clean_bags_on_truck')(value)
+            }
           />
         </Box>
       </View>
-      <View style={[
-        styles.outerContainer,
-        screenSize === 'base' 
-        ? {
-          width: 400
-        } : {
-          width: '70%',
-          minWidth: 500
-        }
-      ]}>
+      <View
+        style={[
+          styles.outerContainer,
+          screenSize === 'base'
+            ? {
+                width: 400,
+              }
+            : {
+                width: '70%',
+                minWidth: 500,
+              },
+        ]}>
         <Heading size="md" style={{flex: 1, paddingBottom: spacingBase * 4}}>
           Crop Details
         </Heading>
@@ -593,9 +590,7 @@ export const HarvestReport: React.FC<TProps> = ({navigation}) => {
               type="numeric"
               value={formState.shell_length}
               requiredChecking={errorHandling}
-              onChange={(text) =>
-                handleTextChange('shell_length')(text)
-              }
+              onChange={(text) => handleTextChange('shell_length')(text)}
             />
           </Box>
         </View>
@@ -606,9 +601,7 @@ export const HarvestReport: React.FC<TProps> = ({navigation}) => {
               type="text"
               value={formState.shell_condition}
               requiredChecking={errorHandling}
-              onChange={(text) =>
-                handleTextChange('shell_condition')(text)
-              }
+              onChange={(text) => handleTextChange('shell_condition')(text)}
             />
           </Box>
         </View>
@@ -619,10 +612,8 @@ export const HarvestReport: React.FC<TProps> = ({navigation}) => {
               type="numeric"
               value={formState.mussels}
               requiredChecking={errorHandling}
-              rightEl='per kg'
-              onChange={(text) =>
-                handleTextChange('mussels')(text)
-              }
+              rightEl="per kg"
+              onChange={(text) => handleTextChange('mussels')(text)}
             />
           </Box>
         </View>
@@ -633,10 +624,8 @@ export const HarvestReport: React.FC<TProps> = ({navigation}) => {
               type="numeric"
               value={formState.meat_yield}
               requiredChecking={errorHandling}
-              rightEl='%'
-              onChange={(text) =>
-                handleTextChange('meat_yield')(text)
-              }
+              rightEl="%"
+              onChange={(text) => handleTextChange('meat_yield')(text)}
             />
           </Box>
         </View>
@@ -647,10 +636,8 @@ export const HarvestReport: React.FC<TProps> = ({navigation}) => {
               type="numeric"
               value={formState.blues}
               requiredChecking={errorHandling}
-              rightEl='%'
-              onChange={(text) =>
-                handleTextChange('blues')(text)
-              }
+              rightEl="%"
+              onChange={(text) => handleTextChange('blues')(text)}
             />
           </Box>
         </View>
@@ -661,42 +648,46 @@ export const HarvestReport: React.FC<TProps> = ({navigation}) => {
               type="text"
               value={formState.marine_waste}
               requiredChecking={errorHandling}
-              onChange={(text) =>
-                handleTextChange('marine_waste')(text)
-              }
+              onChange={(text) => handleTextChange('marine_waste')(text)}
             />
           </Box>
         </View>
-        <Box style={styles.inputSpacing}></Box>
+        <Box style={styles.inputSpacing} />
         <Box style={styles.inlineContainer}>
           <Text style={styles.inputStyleSmall}>Backbone Ok</Text>
           <Checkbox
             value={formState.backbone_ok}
-            onValueChange={value => handleTextChange('backbone_ok')(value)}
+            onValueChange={(value) => handleTextChange('backbone_ok')(value)}
           />
         </Box>
         <Box style={styles.inlineContainer}>
           <Text style={styles.inputStyleSmall}>Backbone Replace</Text>
           <Checkbox
             value={formState.backbone_replace}
-            onValueChange={value => handleTextChange('backbone_replace')(value)}
+            onValueChange={(value) =>
+              handleTextChange('backbone_replace')(value)
+            }
           />
         </Box>
         <Box style={styles.inlineContainer}>
           <Text style={styles.inputStyleSmall}>Lights and Ids in Place</Text>
           <Checkbox
             value={formState.lights_ids_in_place}
-            onValueChange={value => handleTextChange('lights_ids_in_place')(value)}
+            onValueChange={(value) =>
+              handleTextChange('lights_ids_in_place')(value)
+            }
           />
         </Box>
         <Box style={styles.inlineContainer}>
           <Text style={styles.inputStyleSmall}>Floataion on Farm</Text>
           <Checkbox
             value={formState.flotation_on_farm}
-            onValueChange={value => handleTextChange('flotation_on_farm')(value)}
+            onValueChange={(value) =>
+              handleTextChange('flotation_on_farm')(value)
+            }
           />
         </Box>
-        <View style={styles.inputSpacing}></View>
+        <View style={styles.inputSpacing} />
         <View style={styles.inputStyleBig}>
           <Box>
             <Text style={styles.inputStyleSmall}>Number Of Rope Bags</Text>
@@ -704,9 +695,7 @@ export const HarvestReport: React.FC<TProps> = ({navigation}) => {
               type="numeric"
               value={formState.number_of_rope_bags}
               requiredChecking={errorHandling}
-              onChange={(text) =>
-                handleTextChange('number_of_rope_bags')(text)
-              }
+              onChange={(text) => handleTextChange('number_of_rope_bags')(text)}
             />
           </Box>
         </View>
@@ -724,30 +713,37 @@ export const HarvestReport: React.FC<TProps> = ({navigation}) => {
           </Box>
         </View>
       </View>
-      <View style={[
-        styles.outerContainer,
-        screenSize === 'base' 
-        ? {
-          width: 400
-        } : {
-          width: '70%',
-          minWidth: 500
-        }
-      ]}>
+      <View
+        style={[
+          styles.outerContainer,
+          screenSize === 'base'
+            ? {
+                width: 400,
+              }
+            : {
+                width: '70%',
+                minWidth: 500,
+              },
+        ]}>
         <Text style={styles.note}>
-          These bivalve molluscan shellfish have been harvested and handled in accordance with the requirements of the Regulated Control Scheme Animal Products (Specifications for Bivalve Molluscan Shellfish) Notice August 2018.
+          These bivalve molluscan shellfish have been harvested and handled in
+          accordance with the requirements of the Regulated Control Scheme
+          Animal Products (Specifications for Bivalve Molluscan Shellfish)
+          Notice August 2018.
         </Text>
       </View>
-      <View style={[
-        styles.outerContainer,
-        screenSize === 'base' 
-        ? {
-          width: 400
-        } : {
-          width: '70%',
-          minWidth: 500
-        }
-      ]}>
+      <View
+        style={[
+          styles.outerContainer,
+          screenSize === 'base'
+            ? {
+                width: 400,
+              }
+            : {
+                width: '70%',
+                minWidth: 500,
+              },
+        ]}>
         <View style={styles.inputStyleBig}>
           <Box>
             <Text style={styles.inputStyleSmall}>Name</Text>
@@ -755,32 +751,33 @@ export const HarvestReport: React.FC<TProps> = ({navigation}) => {
               type="text"
               value={formState.harvestor_name}
               requiredChecking={errorHandling}
-              onChange={(text) =>
-                handleTextChange('harvestor_name')(text)
-              }
+              onChange={(text) => handleTextChange('harvestor_name')(text)}
             />
           </Box>
         </View>
         <View style={styles.inputStyleBig}>
           <Box>
             <Text style={styles.inputStyleSmall}>Signature</Text>
-            <TouchableWithoutFeedback onPress={() => {
-              setSignPanelVisible(true);
-            }}>
-              <Text style={styles.dateText}>
-                Click here for sign
-              </Text>
+            <TouchableWithoutFeedback
+              onPress={() => {
+                setSignPanelVisible(true);
+              }}>
+              <Text style={styles.dateText}>Click here for sign</Text>
             </TouchableWithoutFeedback>
             {signImage && (
               <Image
                 resizeMode="contain"
                 style={{maxWidth: '100%', width: 600, aspectRatio: 60/35}}
-                source={{uri: signImage}}
+                source={{uri: `${signImage}?${Date.now()}`}}
+                alt="Your Signature Image"
+                size={'xl'}
               />
             )}
-            {(formState.signature === '' && errorHandling) && <Text style={{fontSize: 12, color: 'red'}}>
-              This field is required
-            </Text>}
+            {formState.signature === '' && errorHandling && (
+              <Text style={{fontSize: 12, color: 'red'}}>
+                This field is required
+              </Text>
+            )}
           </Box>
         </View>
         <View style={styles.centeredView}>
@@ -790,11 +787,16 @@ export const HarvestReport: React.FC<TProps> = ({navigation}) => {
             visible={signPanelVisible}
             onRequestClose={() => {
               setSignPanelVisible(!signPanelVisible);
-            }}
-          >
+            }}>
             <View style={styles.centeredView}>
               <View style={styles.modalView}>
-                <View style={{ maxWidth: '100%', width: 600, aspectRatio: 60/35, backgroundColor: 'red' }}>
+                <View
+                  style={{
+                    maxWidth: '100%',
+                    width: 600,
+                    aspectRatio: 60 / 35,
+                    backgroundColor: 'red',
+                  }}>
                   <Signature
                     // handle when you click save button
                     onOK={handleSignDone}
@@ -810,7 +812,7 @@ export const HarvestReport: React.FC<TProps> = ({navigation}) => {
                         color: #FFF;
                       }`}
                     autoClear={true}
-                    imageType={"image/png"}
+                    imageType={'image/png'}
                   />
                 </View>
               </View>
@@ -823,9 +825,7 @@ export const HarvestReport: React.FC<TProps> = ({navigation}) => {
             <CustomTextArea
               height={150}
               value={formState.comments}
-              onChange={(text) =>
-                handleTextChange('comments')(text)
-              }
+              onChange={(text) => handleTextChange('comments')(text)}
             />
           </View>
         </View>
@@ -841,7 +841,7 @@ export const HarvestReport: React.FC<TProps> = ({navigation}) => {
           <DateTimePicker
             testID="dateTimePicker"
             value={harvestDate}
-            mode='date'
+            mode="date"
             is24Hour={true}
             display="default"
             onChange={(event: any, selectedDate: Date | undefined) => {
@@ -855,15 +855,14 @@ export const HarvestReport: React.FC<TProps> = ({navigation}) => {
           <DateTimePicker
             testID="dateTimePicker1"
             value={new Date()}
-            mode='time'
+            mode="time"
             is24Hour={true}
             display="default"
             onChange={(event: any, selectedDate: Date | undefined) => {
               setTimePickerShow(Platform.OS === 'ios' ? true : false);
-              const currentDate = selectedDate || (
-                timeType === 'start' ? startDate : finishDate
-              );
-              if (timeType === 'start')  {
+              const currentDate =
+                selectedDate || (timeType === 'start' ? startDate : finishDate);
+              if (timeType === 'start') {
                 setStartDate(currentDate);
               } else {
                 setFinishDate(currentDate);
@@ -956,20 +955,20 @@ const styles = StyleSheet.create({
   },
   centeredView: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   modalView: {
-    backgroundColor: "lightgrey",
+    backgroundColor: 'lightgrey',
     borderRadius: 15,
     padding: 10,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 2
+      height: 2,
     },
     shadowOpacity: 0.25,
     shadowRadius: 4,
-    elevation: 5
+    elevation: 5,
   },
 });

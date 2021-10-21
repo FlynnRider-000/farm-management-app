@@ -132,8 +132,8 @@ android {
         applicationId "com.musselfarm.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 8
-        versionName "1.0.8"
+        versionCode 9
+        versionName "1.0.9"
 
         multiDexEnabled true
     }
@@ -219,6 +219,8 @@ dependencies {
     } else {
         implementation jscFlavor
     }
+
+    implementation project(':react-native-fs')
 }
 
 // Run this once to be able to run the application with BUCK

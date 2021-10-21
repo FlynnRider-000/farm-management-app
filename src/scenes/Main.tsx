@@ -503,9 +503,7 @@ const Main: React.FC<IProps> = React.memo(({navigation}) => {
                       </View>
                       <View style={styles.flexChild}>
                         <Text>
-                          {moment
-                            .unix(Number(form.date))
-                            .format('YYYY/MM/DD')}
+                          {moment.unix(Number(form.date)).format('YYYY/MM/DD')}
                         </Text>
                       </View>
                       {screenSize !== 'base' && (
